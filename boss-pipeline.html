@@ -1,0 +1,2021 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>黑夜君临 BOSS 制作流程</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<style>
+/* Layout: a production-line handbook. Sticky stage rail on the left (desktop) or a sticky chip bar on top (phone);
+   one reading column; every stage ends in an exit-gate block striped like a barrier; evidence tags encode proof strength by fill. */
+:root{
+  --bg:#f2f4f3;
+  --surface:#fbfcfb;
+  --surface-2:#e5e9e8;
+  --fg:#1a1e22;
+  --fg-2:#394148;
+  --muted:#5b646d;
+  --line:#cdd4d6;
+  --line-strong:#95a0a7;
+  --accent:#0c5a6f;
+  --accent-soft:#d8e8ec;
+  --route-b:#584d8f;
+  --gate:#a87304;
+  --gate-ink:#654400;
+  --gate-soft:#f8efd8;
+  --gate-stripe:#ecd8a4;
+  --proof:#1c6a3b;
+  --proof-ink:#f7fbf8;
+  --proof-soft:#d8ecdf;
+  --static:#2b4e8b;
+  --sim:#584d8f;
+  --warn:#9f3d2a;
+  --warn-soft:#f5e1db;
+  --font-body:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Source Han Sans SC",system-ui,sans-serif;
+  --font-display:"Barlow Condensed","Arial Narrow","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --font-mono:"JetBrains Mono","Cascadia Mono",Consolas,"SFMono-Regular",Menlo,"Noto Sans SC",monospace;
+  --fs-xs:.8125rem;
+  --fs-sm:.875rem;
+  --fs-0:1rem;
+  --fs-1:1.1875rem;
+  --fs-2:1.4375rem;
+  --fs-3:1.875rem;
+  --fs-4:2.5rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101315;
+    --surface:#161a1d;
+    --surface-2:#1f2428;
+    --fg:#e3e7ea;
+    --fg-2:#c2c9cf;
+    --muted:#8f99a2;
+    --line:#2a3137;
+    --line-strong:#4b555d;
+    --accent:#5fb4c9;
+    --accent-soft:#12303a;
+    --route-b:#b0a4e4;
+    --gate:#e0a63a;
+    --gate-ink:#f0c46c;
+    --gate-soft:#271f10;
+    --gate-stripe:#4a3914;
+    --proof:#5cc283;
+    --proof-ink:#0d1a12;
+    --proof-soft:#14301f;
+    --static:#8fb1ec;
+    --sim:#b0a4e4;
+    --warn:#ee8a76;
+    --warn-soft:#351d18;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101315;
+  --surface:#161a1d;
+  --surface-2:#1f2428;
+  --fg:#e3e7ea;
+  --fg-2:#c2c9cf;
+  --muted:#8f99a2;
+  --line:#2a3137;
+  --line-strong:#4b555d;
+  --accent:#5fb4c9;
+  --accent-soft:#12303a;
+  --route-b:#b0a4e4;
+  --gate:#e0a63a;
+  --gate-ink:#f0c46c;
+  --gate-soft:#271f10;
+  --gate-stripe:#4a3914;
+  --proof:#5cc283;
+  --proof-ink:#0d1a12;
+  --proof-soft:#14301f;
+  --static:#8fb1ec;
+  --sim:#b0a4e4;
+  --warn:#ee8a76;
+  --warn-soft:#351d18;
+  color-scheme:dark;
+}
+
+html{-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion: no-preference){ html{scroll-behavior:smooth} }
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:var(--fs-0);line-height:1.75}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--accent);text-underline-offset:.2em;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+code{font-family:var(--font-mono);font-size:.84em;background:var(--surface-2);color:var(--fg);padding:.05em .35em;border-radius:3px;overflow-wrap:anywhere}
+strong{font-weight:700;color:var(--fg)}
+
+.page{
+  max-width:1260px;margin:0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block:0 72px;
+  display:grid;grid-template-columns:minmax(0,1fr);
+}
+@media (min-width:1000px){ .page{grid-template-columns:228px minmax(0,1fr);column-gap:52px} }
+
+/* ---------- index ---------- */
+.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{margin:0}
+.toc a{text-decoration:none;color:var(--fg-2)}
+.toc a:hover{color:var(--accent)}
+.toc a[aria-current="true"]{color:var(--fg);font-weight:700}
+.toc-title{font-family:var(--font-display);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-xs);color:var(--muted);margin:0 0 10px}
+@media (min-width:1000px){
+  .toc{align-self:start;max-height:100vh;max-height:100dvh;overflow-y:auto;padding-block:32px 24px}
+  .toc-main{display:grid;gap:2px}
+  .toc-main>li>a{display:block;padding:3px 0;font-size:var(--fs-sm);font-weight:500}
+  .toc-sub{margin:0 0 6px 10px}
+  .toc-sub a{display:block;padding:1px 0;font-size:var(--fs-xs);color:var(--muted)}
+  .rail{margin:6px 0 12px 7px;border-left:2px solid var(--line-strong)}
+  .rail a{position:relative;display:flex;gap:8px;align-items:baseline;padding:3px 0 3px 16px;font-size:var(--fs-sm);line-height:1.35}
+  .rail a::before{content:"";box-sizing:border-box;position:absolute;left:-7px;top:.5em;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--line-strong)}
+  .rail a[aria-current="true"]::before{background:var(--accent);border-color:var(--accent)}
+  .rail .rc{font-family:var(--font-display);font-weight:600;font-size:1.02rem;min-width:3.1em;color:var(--accent)}
+  .rail .branch a{padding-left:34px}
+  .rail .branch a::before{left:11px;border-style:dashed;border-color:var(--route-b)}
+  .rail .branch a::after{content:"";position:absolute;left:0;top:calc(.5em + 5px);width:12px;height:2px;background:var(--route-b)}
+  .rail .branch .rc{color:var(--route-b)}
+  .rail .dest .rn::after{content:" · 目的地";color:var(--muted);font-size:.75rem}
+}
+@media (max-width:999.98px){
+  .toc{margin-left:calc(-1 * max(16px, env(safe-area-inset-left, 0px)));margin-right:calc(-1 * max(16px, env(safe-area-inset-right, 0px)));background:var(--surface);border-bottom:1px solid var(--line)}
+  .toc-inner{position:relative;overflow-x:auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:8px}
+  .toc-title{display:none}
+  .toc-main{display:flex;gap:6px;white-space:nowrap}
+  .toc .has-sub,.toc .toc-sub,.toc .rail{display:contents}
+  .toc a{display:inline-block;padding:3px 10px;border:1px solid var(--line);border-radius:999px;font-size:var(--fs-xs);background:var(--bg);line-height:1.6}
+  .toc a[aria-current="true"]{border-color:var(--accent);color:var(--accent);font-weight:500}
+  .rail .rn{display:none}
+  .rail .rc{font-family:var(--font-display);font-weight:600;font-size:.9rem}
+  [id]{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 64px)}
+}
+
+/* ---------- main column ---------- */
+main{min-width:0}
+main :is(p,ol,ul,dl){max-width:46rem}
+.hero{padding-block:40px 32px;border-bottom:2px solid var(--fg)}
+.eyebrow{font-family:var(--font-display);font-weight:600;letter-spacing:.16em;text-transform:uppercase;font-size:var(--fs-sm);color:var(--accent);margin:0 0 10px}
+h1{font-size:var(--fs-4);line-height:1.2;margin:0 0 16px;font-weight:700;text-wrap:balance}
+@media (max-width:560px){ h1{font-size:2rem} }
+.lede{font-size:var(--fs-1);color:var(--fg-2);margin:0 0 24px;line-height:1.7}
+.hero-meta{display:grid;gap:10px;font-size:var(--fs-sm);color:var(--fg-2);max-width:56rem}
+.hero-meta>div{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:12px}
+.hero-meta .hm-k{font-weight:700;color:var(--muted);letter-spacing:.06em}
+@media (max-width:560px){ .hero-meta>div{grid-template-columns:minmax(0,1fr);gap:2px} }
+
+.sec{padding-block:52px 8px}
+.sec + .sec{border-top:2px solid var(--fg)}
+h2{display:flex;align-items:baseline;gap:14px;font-size:var(--fs-3);line-height:1.25;margin:0 0 20px;text-wrap:balance}
+.secno{font-family:var(--font-display);font-weight:700;color:var(--accent);font-size:1.2em;line-height:1}
+h3{font-size:var(--fs-2);line-height:1.35;margin:40px 0 12px;text-wrap:balance}
+h4{font-size:var(--fs-0);margin:24px 0 8px;line-height:1.4}
+.lbl{font-size:var(--fs-xs);letter-spacing:.12em;color:var(--muted);font-weight:700;margin:26px 0 8px}
+p{margin:0 0 12px}
+ul,ol{padding-left:1.3em;margin:0 0 12px}
+li{margin-block:4px}
+.note{font-size:var(--fs-sm);color:var(--muted)}
+
+/* ---------- evidence tags ---------- */
+.ev{display:inline-block;font-family:var(--font-mono);font-size:.72rem;line-height:1.5;padding:0 .45em;border-radius:3px;border:1px solid var(--static);color:var(--static);vertical-align:.08em;white-space:nowrap;margin-inline:.12em;font-weight:500}
+.ev-mp,.ev-game{background:var(--proof);border-color:var(--proof);color:var(--proof-ink)}
+.ev-mp{box-shadow:0 0 0 2px var(--proof-soft),0 0 0 3px var(--proof)}
+.ev-sim,.ev-model{border-style:dashed;border-color:var(--sim);color:var(--sim)}
+.ev-inf{border-style:dotted;border-color:var(--warn);color:var(--warn)}
+.evrow{display:flex;flex-wrap:wrap;gap:6px 4px;align-items:center}
+
+/* ---------- tables ---------- */
+.tbl{overflow-x:auto;margin-block:12px 6px;border:1px solid var(--line);background:var(--surface)}
+.tbl table{border-collapse:collapse;width:100%;min-width:560px;font-size:var(--fs-sm);line-height:1.6}
+.tbl.w-l table{min-width:820px}
+.tbl.w-s table{min-width:480px}
+.tbl th,.tbl td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+.tbl th{background:var(--surface-2);font-weight:700;color:var(--fg-2);white-space:nowrap;font-size:var(--fs-xs);letter-spacing:.04em}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td.k{font-weight:700;white-space:nowrap}
+.tbl td.n{font-family:var(--font-display);font-weight:700;font-size:1.05rem;color:var(--muted);font-variant-numeric:tabular-nums;width:2.2em}
+.tbl a.sl{font-family:var(--font-display);font-weight:700;font-size:1.05rem;text-decoration:none;margin-right:6px}
+.tbl a.sl.b{color:var(--route-b)}
+
+/* ---------- route / architecture figures ---------- */
+figure{margin:16px 0 8px}
+.fig{overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+.fig svg{display:block;width:100%;min-width:760px;height:auto}
+figcaption{font-size:var(--fs-xs);color:var(--muted);margin-top:8px;max-width:46rem}
+svg text{font-family:var(--font-body)}
+.sv-t{fill:var(--fg);font-size:14px;font-weight:700}
+.sv-s{fill:var(--muted);font-size:12px}
+.sv-c{fill:var(--muted);font-size:12px;font-family:var(--font-mono)}
+.sv-cb{fill:var(--accent);font-size:15px;font-weight:700;font-family:var(--font-display)}
+.sv-band{fill:var(--surface-2)}
+.sv-guide{stroke:var(--line);stroke-width:1;stroke-dasharray:2 4;fill:none}
+.sv-lane-a{stroke:var(--accent);stroke-width:4;fill:none;stroke-linecap:round}
+.sv-lane-b{stroke:var(--route-b);stroke-width:4;fill:none;stroke-linecap:round;stroke-dasharray:10 5}
+.sv-lane-m{stroke:var(--fg-2);stroke-width:4;fill:none;stroke-linecap:round}
+.sv-lane-d{stroke:var(--gate);stroke-width:3;fill:none;stroke-linecap:round}
+.sv-node{fill:var(--surface);stroke:var(--fg-2);stroke-width:2.5}
+.sv-node-a{fill:var(--surface);stroke:var(--accent);stroke-width:2.5}
+.sv-node-b{fill:var(--surface);stroke:var(--route-b);stroke-width:2.5}
+.sv-dot{fill:var(--gate)}
+.sv-box{fill:var(--surface);stroke:var(--line-strong);stroke-width:1.5}
+.sv-box-acc{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.sv-box-gate{fill:var(--gate-soft);stroke:var(--gate);stroke-width:1.5}
+.sv-box-boss{fill:var(--surface-2);stroke:var(--fg);stroke-width:2}
+.sv-frame{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:6 5}
+.sv-ar{stroke:var(--fg-2);stroke-width:1.6;fill:none}
+.sv-ar-d{stroke:var(--muted);stroke-width:1.6;fill:none;stroke-dasharray:5 4}
+.sv-head{fill:var(--fg-2)}
+.sv-head-d{fill:var(--muted)}
+
+/* ---------- report states, gate kinds ---------- */
+.states{list-style:none;padding:0;margin:14px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px;counter-reset:ss;max-width:none}
+.states li{margin:0;border:1px solid var(--line-strong);background:var(--surface);padding:10px 12px;font-weight:700;line-height:1.45;counter-increment:ss;min-width:0}
+.states li::before{content:counter(ss);display:block;font-family:var(--font-display);font-weight:700;font-size:1.5rem;color:var(--muted);line-height:1.1}
+.states li span{display:block;font-weight:400;font-size:var(--fs-xs);color:var(--muted);margin-top:2px}
+.states li.final{border-color:var(--proof);background:var(--proof-soft)}
+.states li.final::before{color:var(--proof)}
+.kinds{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px 24px;margin:18px 0;max-width:none}
+.kinds>div{min-width:0;border-top:2px solid var(--fg);padding-top:8px}
+.kinds h4{margin:0 0 6px}
+.kinds p{font-size:var(--fs-sm);color:var(--fg-2);margin:0}
+
+/* ---------- glossary ---------- */
+.gloss{display:grid;grid-template-columns:minmax(8em,15em) minmax(0,1fr);gap:8px 20px;margin:12px 0;font-size:var(--fs-sm);max-width:60rem}
+.gloss dt{font-family:var(--font-mono);font-weight:500;color:var(--fg);overflow-wrap:anywhere;font-size:.82rem;padding-top:.1em}
+.gloss dd{margin:0;color:var(--fg-2)}
+@media (max-width:560px){ .gloss{grid-template-columns:minmax(0,1fr);gap:2px} .gloss dd{margin-bottom:10px} }
+
+/* ---------- stages ---------- */
+.stage{padding-block:44px 12px;border-top:1px solid var(--line-strong)}
+.stage:first-of-type{border-top:0;padding-top:16px}
+.stage-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 20px;align-items:start}
+.stage-code{font-family:var(--font-display);font-weight:700;font-size:3.4rem;line-height:.88;color:var(--accent);min-width:2.2ch;letter-spacing:-.01em}
+.stage-code.b{color:var(--route-b);font-size:2.6rem}
+.stage-title h3{margin:2px 0 6px}
+.stage-goal{margin:0;color:var(--fg-2);max-width:42rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:.75rem;line-height:1.6;border:1px solid var(--line-strong);padding:0 8px;color:var(--fg-2);background:var(--surface)}
+.chip.b{border-color:var(--route-b);color:var(--route-b)}
+.chip.nl{border-color:var(--accent);color:var(--accent)}
+@media (max-width:560px){ .stage-head{grid-template-columns:minmax(0,1fr)} .stage-code{font-size:2.8rem} }
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:0 32px}
+.meta-grid>div{min-width:0}
+.meta-grid p{font-size:var(--fs-sm);color:var(--fg-2)}
+
+ol.steps{list-style:none;counter-reset:st;margin:0 0 8px;padding:0;display:grid;gap:10px}
+ol.steps>li{counter-increment:st;position:relative;padding-left:2.5em;margin:0}
+ol.steps>li::before{content:counter(st);position:absolute;left:0;top:.18em;font-family:var(--font-mono);font-size:.74rem;font-weight:500;color:var(--accent);border:1px solid var(--accent);min-width:1.8em;height:1.8em;line-height:1.7em;text-align:center;border-radius:2px;box-sizing:border-box}
+
+.gate{margin-top:26px;border:1.5px solid var(--gate);background:var(--gate-soft);max-width:60rem}
+.gate::before{content:"";display:block;height:8px;background:repeating-linear-gradient(-45deg,var(--gate) 0 8px,var(--gate-stripe) 8px 16px)}
+.gate-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px;padding:10px 16px 0}
+.gate-tag{font-family:var(--font-display);font-weight:700;font-size:1.1rem;letter-spacing:.12em;color:var(--gate-ink)}
+.gate-next{font-size:var(--fs-xs);color:var(--gate-ink);font-weight:500}
+.gate-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:0 28px;padding:2px 16px 14px}
+.gate-col{min-width:0}
+.gate-col h5{font-size:var(--fs-xs);letter-spacing:.08em;color:var(--gate-ink);margin:12px 0 6px;font-weight:700}
+.gate ul{margin:0;padding-left:1.1em;font-size:var(--fs-sm);line-height:1.7}
+.gate li::marker{color:var(--gate)}
+
+.box{margin-top:26px;border:1px solid var(--line-strong);background:var(--surface);max-width:60rem}
+.box-head{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:baseline;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.box-title{font-weight:700;font-size:var(--fs-sm)}
+.box-src{font-family:var(--font-mono);font-size:.74rem;color:var(--muted);overflow-wrap:anywhere}
+.box-body{padding:12px 16px 6px;font-size:var(--fs-sm)}
+.box-body ol.steps>li{font-size:var(--fs-sm)}
+.box.nl .box-title{color:var(--accent)}
+.box.rb .box-title{color:var(--route-b)}
+.box.rb{border-color:var(--route-b)}
+
+.refs{margin-top:22px;font-size:var(--fs-xs);color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 8px;align-items:baseline;max-width:60rem}
+.refs .ref{font-family:var(--font-mono);font-size:.74rem;border:1px solid var(--line);padding:0 6px;background:var(--surface);color:var(--fg-2);overflow-wrap:anywhere}
+
+/* ---------- workflow pieces ---------- */
+.chain{list-style:none;padding:0;margin:12px 0;display:flex;flex-wrap:wrap;gap:6px 4px;align-items:center;max-width:none;counter-reset:ch}
+.chain li{margin:0;display:flex;align-items:center;gap:4px;font-size:var(--fs-sm);counter-increment:ch}
+.chain .bx{border:1px solid var(--line-strong);background:var(--surface);padding:3px 10px}
+.chain .bx::before{content:counter(ch) " ";font-family:var(--font-mono);font-size:.72rem;color:var(--accent)}
+.chain li:not(:last-child)::after{content:"→";color:var(--muted);padding-inline:2px}
+.ask-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px 28px;margin:16px 0}
+.ask-grid>div{min-width:0;border-top:2px solid var(--fg);padding-top:8px}
+.ask-grid h4{margin:0 0 6px}
+.ask-grid p,.ask-grid li{font-size:var(--fs-sm);color:var(--fg-2)}
+
+.checklist{list-style:none;padding:0;margin:10px 0;display:grid;max-width:56rem;border-top:1px solid var(--line)}
+.checklist li{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start;padding:8px 6px;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
+.checklist input{width:18px;height:18px;margin:.2em 0 0;accent-color:var(--accent)}
+.checklist label{cursor:pointer;color:var(--fg)}
+.checklist input:checked + label{color:var(--muted)}
+.cl-tools{display:flex;gap:10px;align-items:center;margin-top:6px}
+.btn{font:inherit;font-size:var(--fs-xs);padding:4px 12px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg-2);cursor:pointer;border-radius:2px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+
+.rules{list-style:none;padding:0;margin:10px 0;counter-reset:r;display:grid;gap:8px;max-width:56rem}
+.rules li{margin:0;counter-increment:r;position:relative;padding-left:2.6em;font-size:var(--fs-sm);color:var(--fg-2)}
+.rules li::before{content:counter(r);position:absolute;left:0;top:0;font-family:var(--font-display);font-weight:700;font-size:1.05rem;color:var(--accent);font-variant-numeric:tabular-nums}
+.rules.cont{counter-reset:r 23}
+
+.unv{list-style:none;padding:0;margin:10px 0;display:grid;gap:8px;max-width:58rem}
+.unv li{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:10px 12px;border:1px dashed var(--warn);background:var(--warn-soft);font-size:var(--fs-sm)}
+.unv .flag{font-size:.72rem;font-weight:700;color:var(--warn);border:1px solid var(--warn);padding:0 6px;line-height:1.6;white-space:nowrap;align-self:start;margin-top:.15em}
+.warnbar{border:1.5px solid var(--warn);background:var(--warn-soft);padding:10px 14px;font-size:var(--fs-sm);max-width:58rem;margin:10px 0}
+.formula{font-family:var(--font-mono);font-size:.86rem;background:var(--surface);border:1px solid var(--line-strong);padding:10px 14px;overflow-x:auto;white-space:nowrap;margin:8px 0 10px;max-width:46rem}
+footer{margin-top:56px;padding-top:16px;border-top:1px solid var(--line);font-size:var(--fs-xs);color:var(--muted)}
+footer p{max-width:56rem}
+</style>
+
+<div class="page">
+
+<nav class="toc" aria-label="目录">
+  <div class="toc-inner">
+    <p class="toc-title">目录</p>
+    <ol class="toc-main">
+      <li class="has-sub"><a href="#overview">1 总览</a>
+        <ol class="toc-sub">
+          <li><a href="#gate-rules">关卡怎么判</a></li>
+          <li><a href="#routes">三条路线</a></li>
+          <li><a href="#stage-table">13 阶段一览</a></li>
+          <li><a href="#glossary">术语速览</a></li>
+        </ol>
+      </li>
+      <li class="has-sub"><a href="#stages">2 阶段详解</a>
+        <ol class="rail">
+          <li><a href="#s0"><span class="rc">S0</span><span class="rn">计划</span></a></li>
+          <li><a href="#s1"><span class="rc">S1</span><span class="rn">提取</span></a></li>
+          <li class="branch"><a href="#s1-alt"><span class="rc">S1-alt</span><span class="rn">建模 · 原创</span></a></li>
+          <li><a href="#s2"><span class="rc">S2</span><span class="rn">展示版</span></a></li>
+          <li><a href="#s3"><span class="rc">S3</span><span class="rn">调试工具</span></a></li>
+          <li><a href="#s4"><span class="rc">S4</span><span class="rn">动作 + TAE</span></a></li>
+          <li><a href="#s5"><span class="rc">S5</span><span class="rn">攻击判定</span></a></li>
+          <li><a href="#s6"><span class="rc">S6</span><span class="rn">特效 + 可读性</span></a></li>
+          <li><a href="#s7"><span class="rc">S7</span><span class="rn">AI</span></a></li>
+          <li class="dest"><a href="#s8"><span class="rc">S8</span><span class="rn">战斗脚本</span></a></li>
+          <li class="dest"><a href="#s9"><span class="rc">S9</span><span class="rn">平衡</span></a></li>
+          <li class="dest"><a href="#s10"><span class="rc">S10</span><span class="rn">联机</span></a></li>
+          <li class="dest"><a href="#s11"><span class="rc">S11</span><span class="rn">发布</span></a></li>
+          <li><a href="#s12"><span class="rc">S12</span><span class="rn">反馈循环</span></a></li>
+        </ol>
+      </li>
+      <li><a href="#debug-tool">3 招式调试工具</a></li>
+      <li class="has-sub"><a href="#workflow">4 开发与发布</a>
+        <ol class="toc-sub">
+          <li><a href="#overlay">叠加包工作流</a></li>
+          <li><a href="#tester">与测试者配合</a></li>
+          <li><a href="#checklist">出包前检查</a></li>
+        </ol>
+      </li>
+      <li class="has-sub"><a href="#lessons">5 铁律与坑</a>
+        <ol class="toc-sub">
+          <li><a href="#rules">铁律</a></li>
+          <li><a href="#pitfalls">最耗时间的坑</a></li>
+          <li><a href="#unverified">尚未验证</a></li>
+        </ol>
+      </li>
+      <li><a href="#evidence">6 证据等级</a></li>
+    </ol>
+  </div>
+</nav>
+
+<main>
+
+<header class="hero" id="top">
+  <p class="eyebrow">Nightreign · 离线 me3 MOD · 制作手册</p>
+  <h1>黑夜君临 BOSS 制作流程</h1>
+  <p class="lede">移植别的游戏的 BOSS、用自己的模型做原创 BOSS、再把它做成夜王，三件事走同一条 S0–S12 流水线。13 个阶段各以一道出口关卡结束；关卡写明要达到的证据等级，没过关卡就不算做完。</p>
+  <div class="hero-meta">
+    <div><span class="hm-k">适用版本</span><span>偏移和原版 id 在 NR 1.3.3.0（PE TimeDateStamp <code>0x69e0dc2a</code>）、regulation 10350000 上测得。游戏更新后要重新核对。</span></div>
+    <div><span class="hm-k">证据标签</span><span class="evrow"><span class="ev ev-mp">game-MP</span><span class="ev ev-game">game</span><span class="ev ev-code">code</span><span class="ev ev-data">data</span><span class="ev ev-sim">sim</span><span class="ev ev-model">model</span><span class="ev ev-inf">inferred</span><span>从强到弱，实心的才算证明。<a href="#evidence">图例见第 6 节</a></span></span></div>
+    <div><span class="hm-k">占位符</span><span><code>&lt;MOD_ROOT&gt;</code> 工作目录 · <code>&lt;GAME_DIR&gt;</code> 游戏目录 · <code>&lt;DEV_PROFILE&gt;</code> 分层开发入口（.me3 文件） · <code>&lt;STAGE_DIR&gt;</code> 暂存包文件夹 · <code>&lt;CHR_ID&gt;</code> 你的角色 id · <code>&lt;DONOR_CHR&gt;</code> 动作供体 · <code>&lt;BEH_DONOR&gt;</code> 行为图供体 · <code>&lt;PACK&gt;</code> 一起发布多个 MOD 的整合包</span></div>
+  </div>
+</header>
+
+<!-- ===================================================== 1 OVERVIEW -->
+<section class="sec" id="overview" aria-labelledby="h-overview">
+  <h2 id="h-overview"><span class="secno">1</span>总览</h2>
+  <p>这条流水线管的是 BOSS 本身：从"这个 BOSS 能不能做"开始，一直到一个外观、动作、攻击、音效、思考、受击和死亡都像原作（或设计稿）的身体；数值以原版为基准，再通过"先开发版、后打包"的循环发布出去。BOSS 最后放在哪里（野外、竞技场、夜王）只影响集成阶段。手册只收录在真实游玩中验证过的方法，失败只写成一行"做 X，因为 Y"。</p>
+  <p>阶段编号 S0–S12 固定不变，别的技能文档会引用它们。子阶段加后缀（S1-alt、S2a……），从不给主阶段重新编号。旧版用过 P0–P9，对应关系是：P0 = S0，P1 = S1，P2 = S2，P3 + P4 = S4，P5 = S5，P6 = S6，P7 = S7，P8 = S9，P9 = S8 / S10。</p>
+
+  <h3 id="gate-rules">关卡怎么判</h3>
+  <p>汇报时分四种状态，绝不合并。游戏里只要出现一个新的反例，之前所有的 PASS 都作废。</p>
+  <ol class="states">
+    <li>已构建<span>构建脚本 PASS</span></li>
+    <li>已安装并读回<span>装进开发入口，独立读回确认</span></li>
+    <li>测试者看到它生效<span>在游戏里亲眼看到</span></li>
+    <li class="final">测试者认可<span>测试者说可以了</span></li>
+  </ol>
+  <div class="kinds">
+    <div>
+      <h4>离线关卡</h4>
+      <p>确定性的构建脚本 PASS + 独立读回（只改了点名的成员 / 行 / 事件 / FXR 槽）+ 本阶段要求的模型数字。它用来决定装什么，绝不用来宣布"修好了"。</p>
+    </div>
+    <div>
+      <h4>游戏内关卡</h4>
+      <p>测试者在开发入口里确认（这时 S3 的调试面板已经能用）。联机关卡要求 <span class="ev ev-mp">game-MP</span>，并收齐每台机器的日志。</p>
+    </div>
+    <div>
+      <h4>发布配置关卡</h4>
+      <p>S7、S9、S10 要在玩家实际使用的配置下测：联机 DLL（无缝联机）、强制深夜层数的附加 MOD、同时加载的其他 MOD。只在单人开发入口里测不算数；实在做不到，就用数字说明不确定性。</p>
+    </div>
+  </div>
+  <p>推断出来的引擎语义，在每份报告里都要标成猜测，例如"方向值 1 = 向上 <span class="ev ev-inf">inferred</span>"。</p>
+
+  <h3 id="routes">三条路线在哪里分岔</h3>
+  <p>"移植"和"原创"是来源路线，决定 S1–S2 怎么做；"做成夜王"是目的地，决定 S8–S11 怎么做。中间 S3–S7 的角色工作两条路线一样，只是原创路线的攻击和 AI 靠设计，没有原作可移植。</p>
+
+  <figure>
+    <div class="fig">
+      <svg viewBox="0 0 1000 300" role="img" aria-labelledby="route-t route-d">
+        <title id="route-t">来源路线与目的地的分岔图</title>
+        <desc id="route-d">S0 之后分成移植和原创两条路线，各自完成 S1 和 S2；在 S3 汇合，S3 到 S7 共用；S7 之后按目的地分成夜王、自建地图块竞技场 BOSS、野外三条线，经过 S8 到 S11；在 S12 汇合。</desc>
+        <rect class="sv-band" x="120" y="36" width="210" height="232"></rect>
+        <rect class="sv-band" x="672" y="36" width="254" height="232"></rect>
+        <g>
+          <line class="sv-guide" x1="60" y1="36" x2="60" y2="268"></line>
+          <line class="sv-guide" x1="175" y1="36" x2="175" y2="268"></line>
+          <line class="sv-guide" x1="275" y1="36" x2="275" y2="268"></line>
+          <line class="sv-guide" x1="385" y1="36" x2="385" y2="268"></line>
+          <line class="sv-guide" x1="445" y1="36" x2="445" y2="268"></line>
+          <line class="sv-guide" x1="505" y1="36" x2="505" y2="268"></line>
+          <line class="sv-guide" x1="565" y1="36" x2="565" y2="268"></line>
+          <line class="sv-guide" x1="625" y1="36" x2="625" y2="268"></line>
+          <line class="sv-guide" x1="715" y1="36" x2="715" y2="268"></line>
+          <line class="sv-guide" x1="775" y1="36" x2="775" y2="268"></line>
+          <line class="sv-guide" x1="835" y1="36" x2="835" y2="268"></line>
+          <line class="sv-guide" x1="895" y1="36" x2="895" y2="268"></line>
+          <line class="sv-guide" x1="960" y1="36" x2="960" y2="268"></line>
+        </g>
+        <g>
+          <text class="sv-cb" x="60" y="26" text-anchor="middle">S0</text>
+          <text class="sv-cb" x="175" y="26" text-anchor="middle">S1</text>
+          <text class="sv-cb" x="275" y="26" text-anchor="middle">S2</text>
+          <text class="sv-cb" x="385" y="26" text-anchor="middle">S3</text>
+          <text class="sv-cb" x="445" y="26" text-anchor="middle">S4</text>
+          <text class="sv-cb" x="505" y="26" text-anchor="middle">S5</text>
+          <text class="sv-cb" x="565" y="26" text-anchor="middle">S6</text>
+          <text class="sv-cb" x="625" y="26" text-anchor="middle">S7</text>
+          <text class="sv-cb" x="715" y="26" text-anchor="middle">S8</text>
+          <text class="sv-cb" x="775" y="26" text-anchor="middle">S9</text>
+          <text class="sv-cb" x="835" y="26" text-anchor="middle">S10</text>
+          <text class="sv-cb" x="895" y="26" text-anchor="middle">S11</text>
+          <text class="sv-cb" x="960" y="26" text-anchor="middle">S12</text>
+        </g>
+        <path class="sv-lane-a" d="M60 150 C 110 150 120 75 165 75 L 300 75 C 340 75 345 150 385 150"></path>
+        <path class="sv-lane-b" d="M60 150 C 110 150 120 225 165 225 L 300 225 C 340 225 345 150 385 150"></path>
+        <path class="sv-lane-m" d="M385 150 L 625 150"></path>
+        <path class="sv-lane-d" d="M625 150 C 665 150 672 75 712 75 L 900 75 C 935 75 935 150 960 150"></path>
+        <path class="sv-lane-d" d="M625 150 L 960 150"></path>
+        <path class="sv-lane-d" d="M625 150 C 665 150 672 225 712 225 L 900 225 C 935 225 935 150 960 150"></path>
+        <circle class="sv-node" cx="60" cy="150" r="9"></circle>
+        <circle class="sv-node-a" cx="175" cy="75" r="8"></circle>
+        <circle class="sv-node-a" cx="275" cy="75" r="8"></circle>
+        <circle class="sv-node-b" cx="175" cy="225" r="8"></circle>
+        <circle class="sv-node-b" cx="275" cy="225" r="8"></circle>
+        <circle class="sv-node" cx="385" cy="150" r="8"></circle>
+        <circle class="sv-node" cx="445" cy="150" r="8"></circle>
+        <circle class="sv-node" cx="505" cy="150" r="8"></circle>
+        <circle class="sv-node" cx="565" cy="150" r="8"></circle>
+        <circle class="sv-node" cx="625" cy="150" r="8"></circle>
+        <g>
+          <circle class="sv-dot" cx="715" cy="75" r="5"></circle><circle class="sv-dot" cx="775" cy="75" r="5"></circle><circle class="sv-dot" cx="835" cy="75" r="5"></circle><circle class="sv-dot" cx="895" cy="75" r="5"></circle>
+          <circle class="sv-dot" cx="715" cy="150" r="5"></circle><circle class="sv-dot" cx="775" cy="150" r="5"></circle><circle class="sv-dot" cx="835" cy="150" r="5"></circle><circle class="sv-dot" cx="895" cy="150" r="5"></circle>
+          <circle class="sv-dot" cx="715" cy="225" r="5"></circle><circle class="sv-dot" cx="775" cy="225" r="5"></circle><circle class="sv-dot" cx="835" cy="225" r="5"></circle><circle class="sv-dot" cx="895" cy="225" r="5"></circle>
+        </g>
+        <circle class="sv-node" cx="960" cy="150" r="9"></circle>
+        <text class="sv-t" x="128" y="54">移植 · A 外部引擎 / A' 同引擎</text>
+        <text class="sv-s" x="175" y="100" text-anchor="middle">提取</text>
+        <text class="sv-s" x="275" y="100" text-anchor="middle">展示版</text>
+        <text class="sv-s" x="175" y="208" text-anchor="middle">S1-alt 建模</text>
+        <text class="sv-s" x="275" y="208" text-anchor="middle">S2a–S2e</text>
+        <text class="sv-t" x="128" y="258">原创 · B 自己的模型</text>
+        <text class="sv-s" x="60" y="178" text-anchor="middle">计划</text>
+        <text class="sv-s" x="385" y="128">两条路线共用（原创的攻击 / AI 靠设计）</text>
+        <text class="sv-s" x="385" y="176" text-anchor="middle">调试</text>
+        <text class="sv-s" x="445" y="176" text-anchor="middle">动作</text>
+        <text class="sv-s" x="505" y="176" text-anchor="middle">判定</text>
+        <text class="sv-s" x="565" y="176" text-anchor="middle">特效</text>
+        <text class="sv-s" x="625" y="176" text-anchor="middle">AI</text>
+        <text class="sv-t" x="712" y="62">夜王（新增 / 替换）</text>
+        <text class="sv-c" x="712" y="98">nightreign-nightlord-replace</text>
+        <text class="sv-t" x="712" y="138">自建地图块的竞技场 BOSS</text>
+        <text class="sv-c" x="712" y="173">map-port + 夜王战斗脚本骨架</text>
+        <text class="sv-t" x="712" y="213">野外 / 特异地形 / 大型敌人</text>
+        <text class="sv-c" x="712" y="248">map-port · ds3-nightreign-port</text>
+        <text class="sv-s" x="960" y="178" text-anchor="middle">反馈循环</text>
+        <text class="sv-s" x="225" y="290" text-anchor="middle">S1–S2：来源路线不同</text>
+        <text class="sv-s" x="505" y="290" text-anchor="middle">S3–S7：共同的角色工作</text>
+        <text class="sv-s" x="799" y="290" text-anchor="middle">S8–S11：目的地不同</text>
+      </svg>
+    </div>
+    <figcaption>实线：移植路线；虚线：原创路线；黄线：三个目的地。S12 的反馈循环对所有路线都一样：每份报告先变成一个开发版叠加包，确认后才进下一次打包。</figcaption>
+  </figure>
+
+  <h4>来源路线</h4>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>路线</th><th>什么时候用</th><th>流水线里哪里不同</th></tr></thead>
+      <tbody>
+        <tr><td class="k">A · 移植（外部引擎）</td><td>BOSS 存在于别的游戏里，有自己的数据（怪物猎人世界、碧蓝幻想 Relink、Unreal 游戏……）</td><td>S1 = 提取 + 自写解码器；S4 转换动作；S7 从原作行为树移植 AI</td></tr>
+        <tr><td class="k">A' · 移植（同引擎家族）</td><td>来源是 FromSoftware 的游戏（黑暗之魂3、艾尔登法环时代的文件）</td><td>S1 / S4 / S6 / S7 的文件几乎 1:1 搬过来，配方见技能 <code>ds3-nightreign-port</code></td></tr>
+        <tr><td class="k">B · 原创（自己的模型）</td><td>没有来源游戏；模型来自概念图、AI 生成或雕刻</td><td>S1 换成 <a href="#s1-alt">S1-alt</a>（建模）；S2 拆成 S2a–S2e（绑骨、重定向原版动作做基础动作、导出、暂存渲染、展示版）；攻击和 AI 靠设计；关卡 G0–G8 对应到 S0–S10</td></tr>
+        <tr><td class="k">做成夜王（目的地）</td><td>放进夜王战：在灵树大厅捏碎道具切换本局夜王，击杀记给原夜王</td><td>角色部分 S1–S7 不变；S0 多出夜王专属的决定；S8–S12 由技能 <code>nightreign-nightlord-replace</code> 负责</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>按来源选做法</h4>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>来源</th><th>做法</th></tr></thead>
+      <tbody>
+        <tr><td>同引擎家族（黑暗之魂3、艾尔登法环、只狼时代的 FromSoftware 游戏）</td><td>动作 / TAE / FXR 几乎 1:1 搬运（<code>ds3-nightreign-port</code>）；保留原骨架、原 id 和 Master 轨</td></tr>
+        <tr><td>外部引擎（MHW、Relink、Unreal 游戏……）</td><td>网格 / 动作 / 时间轴 / AI 都要自写解码器；全部在 NR 供体上重建；特效用 NR 供体特效重新着色</td></tr>
+        <tr><td>没有来源游戏（原创设计 / 生成的模型）</td><td>路线 B：自己的骨架沿用 FromSoftware 核心骨骼名，重定向原版动作，攻击和 AI 靠设计（<code>original_model.md</code>）</td></tr>
+        <tr><td>原作 AI 是数据（MHW 的 THK、Relink 的行为树）</td><td>解码成可执行模型，逐节点移植，离线证明保真度</td></tr>
+        <tr><td>原作 AI 写在代码里，或者根本没有</td><td>从某个原版 goal 分叉，移植能观察到的规则（冷却、距离、血量门槛），每个猜测都做成开关</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>目的地</h4>
+  <div class="tbl w-l">
+    <table>
+      <thead><tr><th>目的地</th><th>S8 战斗</th><th>S10 联机</th><th>S11 发布</th><th>NpcParam 从哪克隆、怎么缩放</th><th>对标基准</th></tr></thead>
+      <tbody>
+        <tr><td class="k">夜王（新增 / 替换）</td><td>nightlord-replace 的 <code>fight_script.md</code>、<code>item_switch.md</code></td><td>它的 <code>coop.md</code></td><td>它的 <code>release_packaging.md</code>、<code>testing.md</code></td><td>一行夜王（固有 7767、人数 7767、深夜 7767 或 0）</td><td>写明的原版均值：3516.29（7 个常规夜王）或 3612.75（8 项，含 Heolstor 1408 + 2880）；伤害对标夜王中位数</td></tr>
+        <tr><td class="k">自建地图块里的竞技场 BOSS</td><td><code>nightreign-map-port</code>（地图块、MSB、碰撞、导航网格）+ 夜王战斗脚本骨架</td><td>同夜王</td><td>同夜王</td><td>如果它结束远征就同夜王，否则取你占用槽位的档位行</td><td>同上，或该档位的原版 BOSS</td></tr>
+        <tr><td class="k">野外 / 特异地形 BOSS、大型敌人</td><td><code>nightreign-map-port</code>、<code>ds3-nightreign-port</code>（遭遇、血条、奖励）</td><td>原版联机规则（同一文件）</td><td>map-port 的 <code>testing-packaging.md</code></td><td>该档位的 NR 替身行（档位、联机、按天缩放都沿用 NR）</td><td>原作血量 × 原作区域缩放 ≈ NR 血量 × NR 档位系数 <span class="ev ev-data">data</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>原创路线的关卡 G0–G8</h4>
+  <p>原创路线汇报时用四个词：Blender 里 OK、格式读回 OK、游戏里能加载、可以开打。</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>关卡</th><th>在哪个阶段</th><th>过关条件（简写）</th></tr></thead>
+      <tbody>
+        <tr><td class="k">G0 合约</td><td><a href="#s0">S0</a></td><td>外形、尺寸、哪些部分是刚体 / 布料 / 额外肢体、供体家族、各项预算都已约定</td></tr>
+        <tr><td class="k">G1 静态模型</td><td><a href="#s1-alt">S1-alt</a></td><td>重新导入后网格 / 面数不变；坐标全是有限值；没有零面积三角形；接口做过近景渲染</td></tr>
+        <tr><td class="k">G2 游戏网格</td><td><a href="#s1-alt">S1-alt</a></td><td>面数达标；和高模同机位对比；UV 接缝完好</td></tr>
+        <tr><td class="k">G3 绑骨</td><td>S2a</td><td>每顶点 ≤ 4 个影响；没有零权重 / 权重和不对的顶点；姿势图；每个姿势的边拉伸 p1–p99</td></tr>
+        <tr><td class="k">G4 动画（Blender）</td><td>S2b（基础动作）、<a href="#s4">S4</a>（攻击）</td><td>逐个动作 QA（着地脚速度、尾巴和腿穿插、地面）+ 0.5 m 网格上的 GIF，由负责人看过</td></tr>
+        <tr><td class="k">G5 格式</td><td>S2c</td><td>每个输出都读回：骨架类型哈希、动作往返误差、FLVER 校验、PTCH 审计、TAE 读回</td></tr>
+        <tr><td class="k">G6 离线游戏数据渲染</td><td>S2d</td><td>用暂存的 FLVER 摆出暂存的动作数据，每个动作渲染多帧</td></tr>
+        <tr><td class="k">G7 游戏里的展示版</td><td><a href="#s2">S2</a> 出口</td><td>能加载、能锁定、能打中、血条名字对、贴图对、二次运动稳定 <span class="ev ev-game">game</span></td></tr>
+        <tr><td class="k">G8 战斗</td><td><a href="#s4">S4</a>–<a href="#s10">S10</a></td><td>攻击、AI、战斗脚本、平衡</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="stage-table">13 个阶段一览</h3>
+  <div class="tbl w-l">
+    <table>
+      <thead><tr><th>阶段</th><th>目标</th><th>主要产出</th><th>出口关卡</th><th>证据等级</th></tr></thead>
+      <tbody>
+        <tr><td class="k"><a class="sl" href="#s0">S0</a>计划</td><td>决定做什么，以及"做完"和"发生了什么"怎么看</td><td>调查表、关键决定、诊断计划、发布配置、id 登记表（原创：G0 合约）</td><td>决定写下；测试者同意"做完"和保真规则；id 检查器在所有同时加载的层上干净</td><td><span class="ev ev-data">data</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s1">S1</a>提取</td><td>只读、带哈希的来源 + 验证过的解码器 + 每招数据</td><td>清单、解码器、动作目录、攻击数据表</td><td>每个动作都能解码，渲染得和原作一样；每招都有攻击数据表</td><td><span class="ev ev-data">data</span></td></tr>
+        <tr><td class="k"><a class="sl b" href="#s1-alt">S1-alt</a>建模</td><td>（原创）能进游戏的静态网格</td><td>高模、游戏网格、贴图</td><td>G1 + G2，负责人看过渲染图</td><td><span class="ev ev-data">data</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s2">S2</a>展示版</td><td>能加载、外观对、能被打中、会死；还没有攻击</td><td>骨架、FLVER、dummy、受击胶囊、部位分组、behbnd、最小 anibnd、参数行、名字</td><td>可见 / 可锁定 / 可打中 / 会死，每种语言血条名字都对；每个部位受击覆盖率 ≥ 95 %</td><td><span class="ev ev-game">game</span><span class="ev ev-model">model</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s3">S3</a>调试工具</td><td>随时播放任意招式，并读出发生了什么</td><td>开发版调试面板、同步日志、AI 堆监测、开发版 AI 绑定</td><td>面板能播招式、日志可读；flag 全关时包装函数不起作用</td><td><span class="ev ev-game">game</span><span class="ev ev-sim">sim</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s4">S4</a>动作 + TAE</td><td>每个招式和受击都完整，朝向像原作，不滑步</td><td>动作、变体、TAE、标记、受击、倒地、死亡</td><td>每招完整、不滑步；朝向模型与日志一致</td><td><span class="ev ev-game">game</span><span class="ev ev-model">model</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s5">S5</a>攻击判定</td><td>每招只在显示的地方、显示的时刻伤人</td><td>判定链、胶囊、弹体、地面 / 碰撞规则</td><td>每招的模型表格；每招经面板播一次，没有"没碰到却中招"</td><td><span class="ev ev-model">model</span><span class="ev ev-game">game</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s6">S6</a>特效 + 可读性</td><td>外观被认可、守住预算、有声音</td><td>改了数值的特效副本、音效包、TAE 96 / 129、受击火花</td><td>测试者认可外观；填充 / 粒子 / 存活特效 ≤ 预算包络</td><td><span class="ev ev-game">game</span><span class="ev ev-model">model</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s7">S7</a>AI</td><td>选招像原作；AI 堆撑过真实远征</td><td>预编译 Lua、保真报告、加载成本报告</td><td>按"已安装状态"报告保真度；真实远征 + 同时加载的 MOD 下监测堆</td><td><span class="ev ev-sim">sim</span><span class="ev ev-game">game</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s8">S8</a>战斗脚本 + 场地</td><td>在目的地从到场一直到胜负；场地干净</td><td>战斗 EMEVD、演出、碰撞状态、导航网格、文本、关键道具</td><td>到场 → 胜利；碰撞审计 0 个孤儿件；语言矩阵完整</td><td><span class="ev ev-game">game</span><span class="ev ev-model">model</span><span class="ev ev-data">data</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s9">S9</a>平衡</td><td>测试者定下的数字，按深度 / 人数给出</td><td>血量、部位倍率、破坏耐久、伤害</td><td>测试者的决定连同按深度 / 人数的数字记录在案；日志里的最大血量 = 公布的表</td><td><span class="ev ev-game">game</span><span class="ev ev-sim">sim</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s10">S10</a>联机</td><td>每台机器上都是同一场战斗</td><td>房主 / 客机分工、槽位审计、网络 flag 的决定</td><td>编号的检查清单 + 每台机器的日志对齐</td><td><span class="ev ev-mp">game-MP</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s11">S11</a>发布</td><td>发布的正是测试者在开发版里确认过的</td><td>钉文件、差量 regulation、安装器 / 补丁、readme</td><td>发布 vs 开发只差点名的开发专用行 / 发布专用格；发布 vs 上一版 = 预期清单；隐私扫描 0 个新命中</td><td><span class="ev ev-data">data</span></td></tr>
+        <tr><td class="k"><a class="sl" href="#s12">S12</a>反馈循环</td><td>每份报告变成一个开发版叠加包，确认后才打包</td><td>每份报告一个叠加包</td><td>下次打包前，测试者在开发版里确认</td><td><span class="ev ev-game">game</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="glossary">术语速览</h3>
+  <p>下文保留这些术语的原名，这里各用一句话说明。</p>
+  <dl class="gloss">
+    <dt>me3</dt><dd>MOD 加载器。一个 <code>.me3</code> 配置文件（profile）按顺序加载多个包；同一路径上，后加载的包生效。</dd>
+    <dt>regulation.bin</dt><dd>游戏的参数总包，NpcParam、AtkParam、Bullet、SpEffect 等参数表都在里面。</dd>
+    <dt>NpcParam</dt><dd>NPC 参数表，一行定义一个敌人的血量、模型、AI、缩放等。</dd>
+    <dt>SpEffect</dt><dd>特殊效果行：挂在角色身上的状态 / 标记，也用来切换动作变体、阶段、倍率。</dd>
+    <dt>AtkParam · Bullet · BehaviorParam</dt><dd>攻击判定、弹体、"行为"（TAE 事件引用的攻击入口）三张参数表。</dd>
+    <dt>TAE</dt><dd>动作时间轴事件文件：在每个动作的时间线上挂事件（判定、出弹、特效、音效、转身窗口、AI 窗口……）。</dd>
+    <dt>FXR</dt><dd>特效文件；装在 <code>sfxbnd</code> binder 里。</dd>
+    <dt>EMEVD</dt><dd>事件脚本，管流程逻辑：开战、血条、阶段、演出、胜负。</dd>
+    <dt>FLVER</dt><dd>FromSoftware 的模型格式（网格、骨骼节点、材质、dummy）。</dd>
+    <dt>dummy（dummy poly）</dt><dd>模型上带编号的挂点，弹体、特效、判定从这里发出。</dd>
+    <dt>hkx · PTCH · THSH</dt><dd>Havok 文件（骨架、动作、物理 / 受击胶囊）；PTCH 是其中的指针修补段，THSH 是类型哈希段。</dd>
+    <dt>behbnd · anibnd · chrbnd</dt><dd>行为图包 · 动作包 · 角色包。行为图决定能播哪些动作状态。</dd>
+    <dt>MSB · navmesh</dt><dd>地图摆放文件 · 导航网格（AI 和召唤物寻路用）。</dd>
+    <dt>FMG · NpcName</dt><dd>文本表 · 敌人名字文本。</dd>
+    <dt>Lua · .luagnl</dt><dd>AI 脚本 · AI 全局名字表（随 Lua 一起重新生成）。</dd>
+    <dt>Wwise bank</dt><dd>音效包。</dd>
+    <dt>供体（donor）</dt><dd>借用其行为图、动作、特效或参数行的原版角色，如 c2130、c4510、c4373。</dd>
+    <dt>叠加包（overlay）</dt><dd>开发入口里的一个新包，每次只装一个改动。</dd>
+    <dt>无缝联机 · 深夜</dt><dd>第三方联机 MOD（Seamless Co-op） · 游戏的高难度层数（Deep Night）。</dd>
+    <dt>TDR · DRED</dt><dd>显卡超时重置 · DirectX 12 的崩溃面包屑报告，用来定位显卡卡死。</dd>
+    <dt>代理</dt><dd>帮你做构建和分析的 AI 助手。代理从不启动游戏，也不碰存档。</dd>
+  </dl>
+</section>
+
+<!-- ===================================================== 2 STAGES -->
+<section class="sec" id="stages" aria-labelledby="h-stages">
+  <h2 id="h-stages"><span class="secno">2</span>阶段详解</h2>
+  <p>每个阶段写明：目标、输入、具体步骤、工具和文件、出口关卡（离线能测的 vs 要测试者在游戏里确认的）、常见失败与修法、详细资料在哪。资料文件名默认在技能 <code>nightreign-boss-port</code> 的 <code>references/</code> 目录下；夜王相关的在 <code>nightreign-nightlord-replace</code> 的 <code>references/</code> 下。</p>
+
+  <!-- S0 -->
+  <article class="stage" id="s0" aria-labelledby="h-s0">
+    <div class="stage-head">
+      <div class="stage-code">S0</div>
+      <div class="stage-title">
+        <h3 id="h-s0">计划</h3>
+        <p class="stage-goal">动任何文件之前，先决定做什么、"做完"怎么判，以及在游戏里用什么看清发生了什么。</p>
+        <div class="chips"><span class="chip">所有路线</span><span class="chip b">原创：G0 合约</span><span class="chip nl">夜王：五个决定</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>来源游戏（只读）或概念 / 模型（原创路线）；原版提取文件；BOSS 将来要随之发布的 profile。</p></div>
+      <div><p class="lbl">工具和文件</p><p>协调文件（json / md）、带允许列表的 id 检查器、原版 AI 普查（<code>ai_port.md</code> §6）；每条工作线一个 STATE.md。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li><strong>调查表</strong>（<code>survey_and_extraction.md</code> §1）：动作、骨骼、网格、时间轴、攻击 / 受击数据、特效、音效、AI、只存在于原作 exe 里的数字、阶段形态、辅助角色（helper actor）。</li>
+      <li><strong>关键决定</strong>：目的地；按体型选行为图供体（<code>donor_graph.md</code>：人形 c2130，四足 / 飞行 c4510，普通敌人 c4373）；放在哪（原版竞技场地图块，还是自建地图块；优先自建、只让它自己的路线加载，原因见 S7）；深夜关联（7767 或 0）；夜王的切换协议（<code>nightreign-nightlord-replace</code>）。</li>
+      <li><strong>"忠于原作"类请求先评估可行性</strong>：尽早调查原作机制（真正的必杀判定、防御 / 掩体影子、被地形挡住的扇形、锚定目标的图案、NPC 台词），每一项写成"原作是 X；我们可以做 A / B / C"并附数字。测试者多次在简化之后又要回原作行为 <span class="ev ev-game">game</span>。</li>
+      <li><strong>诊断计划</strong>（S3 里实现，<code>diagnostics.md</code>）：同步日志字段包括 BOSS 动作 id、位置、朝向、血量；本地玩家的位置、血量和受到的伤害；这场战斗的每一个 MOD flag（含每台机器的 worker / 锁 flag）；部位记录（基础 / 最大 / 当前）；AI 堆监测；帧时间。战斗用的 flag 要预留在日志已经覆盖的范围里。</li>
+      <li><strong>发布配置清单</strong>：联机 DLL（无缝联机）、强制深夜层数的附加 MOD、同时加载的其他 MOD（它们的 AI 绑定，还有谁也在你的竞技场地图块里）、me3 版本。计划在这个配置下打一场校准战（S9）。</li>
+      <li><strong>构建前先建 id 登记表</strong>：角色 id（档案字典里没有，任何同时加载的 MOD 里也没有，包括它们的开发阶段）、弹体号段、BehaviorParam 判定、AtkParam、SpEffect、特效 id、音效 id、flag、实体 id、导航网格 NameID、关键道具行、文本 id。每个范围只有一个负责人，范围只写在负责人自己那一节（有一次检查器失败，就因为另一份笔记引用了调试范围）<span class="ev ev-data">data</span>。</li>
+      <li><strong>整个联合 profile 的 AI 堆预算，按世界算</strong>（<code>ai_port.md</code> §6）：aicommon + 开放地图格 + 竞技场地图块的脚本 + 召唤物 + 每个同时加载的 MOD 的脚本。</li>
+      <li><strong>原创路线的 G0 合约</strong>：外形、尺寸（身高，米）、哪些部分是刚体 / 布料 / 额外肢体、动作供体家族、行为供体、预算（面数、骨骼数、贴图尺寸）、展示版要证明什么。</li>
+      <li><strong>问测试者"做完"是什么意思</strong>：保真规则、哪些可以简化、仇恨 / 到场规则，并约定汇报用的四种状态。开一个协调文件（id、负责人、决定），每条工作线一个 STATE.md。</li>
+    </ol>
+
+    <div class="box nl">
+      <div class="box-head"><span class="box-title">做成夜王时：五个决定</span><span class="box-src">nightreign-nightlord-replace · ids_and_planning.md §1–5</span></div>
+      <div class="box-body">
+        <div class="tbl w-s">
+          <table>
+            <thead><tr><th>决定</th><th>选 A 的情况</th><th>选 B 的情况</th></tr></thead>
+            <tbody>
+              <tr><td class="k">A 放进原版竞技场 / B 自建地图块</td><td>BOSS 适合原版竞技场；那里只住一个 MOD BOSS；能接受它的 AI 和角色在每次去那个地图块的远征里都加载</td><td>有自己的场地几何；别的 MOD 已经占用原版竞技场脚本；或共享地图块的 AI 堆很紧</td></tr>
+              <tr><td class="k">供体行为图 c2130 / c4510</td><td>两足、人形来源</td><td>四足、龙、飞行者</td></tr>
+              <tr><td class="k">单向锁定 / 最后捏碎的为准</td><td>profile 里只有一个 MOD 道具</td><td>多个 MOD BOSS 共用灵树大厅</td></tr>
+              <tr><td class="k">深夜缩放开（7767）/ 关（0）</td><td>希望每个深度都像夜王</td><td>想要固定难度</td></tr>
+              <tr><td class="k">独立 / 整合包层</td><td>在原版基础上用自己的 profile</td><td>玩家用整合包 profile：对整合包的文件做三方合并</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>另外写下诊断计划（含玩家血量 / 受到伤害的同步日志字段、flag 清单、AI 堆监测、调试面板）和发布配置。从角色 id 推出所有 id 号段，每种 id 只在一个登记表里认领，并扫描每个可能同时加载的层（原版、整合包里的包、其他 MOD 的发布版和开发阶段）。</p>
+        <p>id 规则：flag 只放在事件 flag 分配表列出的块里，第四位不能是 6（否则读出来恒为 OFF、写入被丢掉，且没有报错）；需要的存储类别（world / 临时 / 本地）保持不变。实体 id 的千位不能是 5 / 6 / 7（那是组 id，命令作用在上面没反应）。事件 id 本身也是 flag，要和普通 flag 不相交。</p>
+      </div>
+    </div>
+
+    <div class="gate" role="group" aria-label="S0 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才进入 S1 / S1-alt</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>书面 / 离线可测</h5><ul>
+          <li>关键决定已写进协调文件</li>
+          <li>id 登记表在每个可能同时加载的层上通过 id 检查器 <span class="ev ev-data">data</span></li>
+          <li>诊断字段清单和发布配置已写下</li>
+          <li>原创路线：G0 合约已写下</li>
+        </ul></div>
+        <div class="gate-col"><h5>与测试者确认</h5><ul>
+          <li>测试者同意"做完"的定义和保真规则（这一关是书面约定，还不涉及游戏）</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>日志里没有玩家血量 / 受到伤害字段："我到底有没有被打中"三轮都没法判断；部位血没记录，又靠推理浪费两轮</td><td>按上面的诊断计划在 S3 实现</td></tr>
+          <tr><td>在深度 0、不带联机 DLL 的单人环境下调校，而整合包在联机里强制深度 4：破坏快了 4–5 倍 <span class="ev ev-mp">game-MP</span></td><td>在发布配置下校准一次</td></tr>
+          <tr><td>打包时才发现导航网格 NameID 和一个保护 flag 没人认领；快速测试入口的事件 id 和一个新保护 flag 撞号 <span class="ev ev-data">data</span></td><td>一个登记表，对每一层做分类扫描</td></tr>
+          <tr><td>MOD BOSS 放进共享的原版竞技场地图块：它的角色和 AI 在每次去那里的远征里都加载 <span class="ev ev-data">data</span>，导致崩溃</td><td>自建地图块（见 S7 的堆）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">boss_pipeline.md S0</span><span class="ref">survey_and_extraction.md §1 §6</span><span class="ref">donor_graph.md</span><span class="ref">ai_port.md §6</span><span class="ref">diagnostics.md</span><span class="ref">nightlord-replace: ids_and_planning.md</span></p>
+  </article>
+
+  <!-- S1 -->
+  <article class="stage" id="s1" aria-labelledby="h-s1">
+    <div class="stage-head">
+      <div class="stage-code">S1</div>
+      <div class="stage-title">
+        <h3 id="h-s1">提取</h3>
+        <p class="stage-goal">得到一份完整、带哈希、只读的提取，验证过的解码器，一份动作目录，以及每招的攻击数据表。</p>
+        <div class="chips"><span class="chip">移植路线 A / A'</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>来源游戏的安装文件（只读）；S0 的调查表和 id 登记表。同引擎家族（A'）直接用 <code>ds3-nightreign-port</code> 的转换配方。</p></div>
+      <div><p class="lbl">工具和文件</p><p>自写解码器 + 与原作渲染比对；大小 + SHA-256 清单；按测量生成的动作目录；每招攻击数据表。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li>一次提取全部内容（网格、骨骼、包括过场在内的所有动作、时间轴、攻击 / 受击数据、AI、参数、音效包、文本表、贴图含虚拟贴图），清单记录大小 + SHA-256。从不往提取目录里写东西，来源游戏以后可能被卸载。</li>
+      <li>自写解码器，把解码出的姿势和原作渲染对比来验证；统一一个时钟约定（60 fps + 速度曲线）。</li>
+      <li><strong>每招攻击数据表</strong>（<code>survey_and_extraction.md</code> §6）：每个弹体从哪个关节发出（MHW 的吐息弹体来自吐息关节，不是头）、弹体寿命 vs 特效寿命、半径和增长、速度、重复命中间隔、摆放规则（锚定目标 / BOSS / 地面；图案范围）、伤害值、特殊 id，以及所有只存在于 exe 里的数字。某次移植后来有六轮修复，都是"从错误的位置瞄准 / 锚定" <span class="ev ev-game">game</span>。</li>
+      <li>按测量给动作贴标签（髋部高度、根节点、"有没有动作从它的结束姿势开始"），绝不按名字；用安装文件建立带稳定 id 的动作目录。</li>
+      <li>从来源自己的文本表里取 BOSS、阶段、招式、召唤物在每种语言下的官方名字（S2、S11 要用）。</li>
+    </ol>
+    <div class="gate" role="group" aria-label="S1 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才进入 S2</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>每个动作都能解码，渲染得和原作一样 <span class="ev ev-data">data</span></li>
+          <li>动作目录已建；每招都有攻击数据表 <span class="ev ev-data">data</span></li>
+          <li>清单复查干净（来源没被改动）<span class="ev ev-data">data</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>与测试者确认</h5><ul>
+          <li>死亡、倒地、转身这类角色分配：先测量，再问测试者</li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>公开的解析器有错</td><td>自己写，用渲染核对</td></tr>
+          <tr><td>死亡和倒地的标签互换了</td><td>测量，并问测试者</td></tr>
+          <tr><td>比对了过期的补丁块</td><td>每个路径取最新的块</td></tr>
+          <tr><td>代理覆盖了一张来源表</td><td>每次代理任务后复查清单，从存档恢复</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">survey_and_extraction.md</span><span class="ref">ds3-nightreign-port（A'）</span></p>
+  </article>
+
+  <!-- S1-alt -->
+  <article class="stage" id="s1-alt" aria-labelledby="h-s1alt">
+    <div class="stage-head">
+      <div class="stage-code b">S1-alt</div>
+      <div class="stage-title">
+        <h3 id="h-s1alt">建模（原创路线：G1 + G2）</h3>
+        <p class="stage-goal">绑骨之前，先得到一个静态、符合游戏预算、接口干净、带贴图的网格。</p>
+        <div class="chips"><span class="chip b">仅原创路线 B</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>概念图 / AI 生成 / 雕刻的模型；S0 的 G0 合约（预算）。</p></div>
+      <div><p class="lbl">工具和文件</p><p>Blender（分部件、焊接、Collapse 减面、按角度平滑）；导出后重新导入统计；和高模同机位渲染对比。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li>分部件生成 / 雕刻（身体、头盔、背包、尾巴、道具），但袖子、袖口、手套、靴子留在身体里。</li>
+      <li>在静态模型里就把接口修好：用材质贴图区分衣领和头盔、袖口和手套，处理挂载点和尾巴插座。</li>
+      <li>先焊接接缝，再用 Collapse 减面（UV 接缝保留）。</li>
+      <li>用按角度的平滑；硬表面绝不用平面着色。</li>
+      <li>先简化端盖。</li>
+      <li>每个交付版本都不再改动，新版本放新文件夹。</li>
+    </ol>
+    <div class="gate" role="group" aria-label="S1-alt 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡 G1 + G2</span><span class="gate-next">过关才进入 S2a 绑骨</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>G1：导出文件重新导入后网格 / 面数一致；所有坐标是有限值；没有零面积三角形；接口做过近景渲染 <span class="ev ev-data">data</span></li>
+          <li>G2：面数达标；和高模同机位对比；UV 接缝完好 <span class="ev ev-data">data</span></li>
+          <li>参考：一个约 16.7 万面、带三层尾巴的人形 BOSS 在安静的竞技场里能 60 fps 加载 <span class="ev ev-game">game</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>与负责人确认</h5><ul>
+          <li>负责人看过渲染图并认可</li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">original_model.md §1</span></p>
+  </article>
+
+  <!-- S2 -->
+  <article class="stage" id="s2" aria-labelledby="h-s2">
+    <div class="stage-head">
+      <div class="stage-code">S2</div>
+      <div class="stage-title">
+        <h3 id="h-s2">展示版</h3>
+        <p class="stage-goal">身体能加载、看起来对、到处能锁定、能打中，并且能正常死亡。这一阶段还没有攻击。</p>
+        <div class="chips"><span class="chip">所有路线</span><span class="chip b">原创：S2a–S2e（G3–G7）</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>S1 的解码器 / 动作目录，或 S1-alt 的网格；供体文件；原版模板（FLVER、骨架、物理、behbnd）。</p></div>
+      <div><p class="lbl">工具和文件</p><p>HKLib / 自写 Havok 写入器、SoulsFormats、Blender（原创路线）。文件：FLVER、hkx、hkxpwv、behbnd、anibnd、chrbnd、regulation、FMG。一个遇错即停的链式构建脚本。</p></div>
+    </div>
+    <p class="lbl">具体步骤（两条路线都做）</p>
+    <ol class="steps">
+      <li><strong>骨架</strong>：Master 在原点且为单位变换（原创路线：重设 Master 并把它的变换折进子骨骼）；供体需要的地方加 Root；面朝 -Z；按深度优先，父骨骼排在子骨骼前（<code>skeleton_model.md</code> §1–2）。</li>
+      <li><strong>FLVER</strong>：节点顺序 [有权重的骨骼][网格][dummy 拥有者][其他骨骼]；材质名唯一；显示遮罩；OBB 网格包围盒；贴图配 <code>_l</code> 孪生文件（<code>skeleton_model.md</code> §3–5）。</li>
+      <li><strong>dummy</strong>：每个摆放用 dummy 都挂在固定 SFX 拥有者节点（<code>Dmypoly_SFX_固定</code>）上，因为父 / 附着为 -1 会绑到节点 0，也就是会动的髋部；地面 dummy 放在 Y 0.3；沿原作吐息关节 2.0 m 处放一个 dummy 给吐息流用；id &lt; 1000（<code>skeleton_model.md</code> §6）。</li>
+      <li><strong>受击胶囊</strong>：物理 hkx 从刚体 / 约束数量相同的模板做，修 PTCH / THSH，在 hkxpwv 里做部位分组。在任何人加大胶囊之前，先做<strong>覆盖率检查</strong>（日志或模型里的命中点 vs 胶囊，按部位的网格覆盖）（<code>physics_hurtboxes.md</code>）。</li>
+      <li><strong>behbnd</strong> 来自供体（look-at / twist 按名字映射，IK 关闭），复制 hks；最小 anibnd：待机、行走、转身、死亡，以及行为图会跑的 2 帧单位叠加动作（<code>donor_graph.md</code>）。</li>
+      <li><strong>参数行</strong>：NpcParam 混合克隆（身体字段取体型供体，缩放 / 阵营 / 韧性取目的地档位）；battle goal 11000（什么都不做）；ChrModelParam、ScratchedPartsParam、LockCam（<code>params_balance.md</code> §1–2）。</li>
+      <li><strong>名字</strong>：NpcName（以及任何血条 / 召唤物名字）覆盖游戏发行的每一种语言，用来源文本表里的官方名字。开战时的血条名字来自 common 事件 90075101 的本地副本（填你的 NpcName），不是 <code>NpcParam.nameId</code>，也不是 90075901（它管的是胜利横幅）（<code>original_model.md</code> §10）。</li>
+      <li><strong>展示版的摆放</strong>：在原版竞技场里替换目标夜王的 MSB 部件（同一实体 id），或放进自建地图块；用单独的测试 profile 和单独的存档。</li>
+    </ol>
+
+    <div class="box rb">
+      <div class="box-head"><span class="box-title">原创路线的子阶段</span><span class="box-src">original_model.md · animation.md §10</span></div>
+      <div class="box-body">
+        <div class="tbl">
+          <table>
+            <thead><tr><th>子阶段</th><th>关卡</th><th>做什么</th><th>资料</th></tr></thead>
+            <tbody>
+              <tr><td class="k">S2a 绑骨</td><td>G3</td><td>按你模型自己的关节位置放 FromSoftware 核心骨骼名；大衣骨链；尾巴骨骼（可见层 + 隐藏层）；用相互竞争的测地线洪泛给网格分区；平滑权重 ≤ 4 个影响；刚体部件 100 % 绑一根骨；不用骨骼旋转在静止姿势里塑造布料</td><td><code>original_model.md</code> §2–4</td></tr>
+              <tr><td class="k">S2b 基础动作</td><td>G4</td><td>重定向原版供体动作（待机、行走、横移、转身、受击、死亡）；脚 / 脚掌锁定；修正站姿扭转；尾巴和大衣的二次运动，带构建守卫</td><td><code>animation.md</code> §10，<code>original_model.md</code> §5–6</td></tr>
+              <tr><td class="k">S2c 导出</td><td>G5</td><td>从 JSON 规格把骨架写到原版模板上，两个读取器 + 类型哈希；动作 + 参考帧，往返误差；FLVER（UV 的 V 翻转、法线贴图 G 通道、≤ 4 权重）；物理用供体模板 + 测量的胶囊；TAE 映射到你的动作 id</td><td><code>original_model.md</code> §8</td></tr>
+              <tr><td class="k">S2d 暂存渲染</td><td>G6</td><td>用暂存的 FLVER 摆出暂存的动作，每个动作渲染多帧（所有二次运动的 bug 在第 0 帧都看不出来）</td><td><code>original_model.md</code> §11</td></tr>
+              <tr><td class="k">S2e 展示版</td><td>G7</td><td>游戏里能加载、能锁定、能打中、血条名字对、贴图对、二次运动稳定</td><td>本阶段出口关卡</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>每过一道关卡都在<strong>新的版本文件夹</strong>里做，保留上一版用来回退；用一个遇错即停的链式脚本构建（每项检查失败就以非零退出）。连续两次"修复"都带出了只在游戏里看得到的回归 <span class="ev ev-game">game</span>。</p>
+      </div>
+    </div>
+
+    <div class="box nl">
+      <div class="box-head"><span class="box-title">做成夜王时</span><span class="box-src">nightreign-nightlord-replace · Phase 1 · character_port.md</span></div>
+      <div class="box-body">
+        <p>NpcParam 从被替换的夜王那一行克隆，battle goal 11000。展示版可以先放在原版竞技场槽位里（<code>fight_script.md</code> §3）。崩溃时先看事件 1001 的偏移，再查 <code>character_port.md</code> §13 的已知表。第一个攻击之前，先做好调试面板和同步日志 / 堆监测（S3）。</p>
+      </div>
+    </div>
+
+    <div class="gate" role="group" aria-label="S2 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡（原创路线 = G7）</span><span class="gate-next">过关才进入 S3</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>每个部位的受击覆盖率 ≥ 95 % <span class="ev ev-model">model</span></li>
+          <li>PTCH 审计 MISSING 0 / UNHASHED 0 <span class="ev ev-data">data</span></li>
+          <li>FLVER 读回：节点顺序、标志、dummy <span class="ev ev-data">data</span></li>
+          <li>behbnd 对照骨架读回：0 个未映射引用 <span class="ev ev-data">data</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者在游戏里确认</h5><ul>
+          <li>可见、可锁定、到处能打中、正常死亡 <span class="ev ev-game">game</span></li>
+          <li>玩家走近不崩溃 <span class="ev ev-game">game</span></li>
+          <li>每种发行语言下血条名字都对 <span class="ev ev-game">game</span></li>
+        </ul></div>
+      </div>
+    </div>
+
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>加载时 / 玩家走近时崩溃（Windows 应用程序事件 1001，偏移 0x1A11B59 / 0x182AC83 / 0x6F3EEA8 / 0x6F3EED7）</td><td>前两个是 hkx 的 PTCH / TYPE：做修复；后两个是 FLVER 节点顺序 / 第二骨架表</td></tr>
+          <tr><td>弹体 / 辅助物在 3–38 m 高处排成"楼梯"出现</td><td>dummy 挂在节点 0（髋部）：改挂到固定 SFX 节点</td></tr>
+          <tr><td>贴图看起来像迷彩（原创路线）</td><td>UV 的 V 没翻转；一个会自动翻回来的离线渲染器掩盖了问题：显式检查翻转</td></tr>
+          <tr><td>血条显示原版名字</td><td>名字改在了 90075901 里：本地复制 90075101，并重定向每个调用者</td></tr>
+          <tr><td>某些语言下血条名字空白</td><td>那些语言缺 NpcName 行：做 id × 语言审计</td></tr>
+          <tr><td>测试竞技场里返回 / 离开事件悄悄没了</td><td>阶段文件夹换了之后，构建脚本回退用了原版 MSB：断言 MSB 来源是<strong>当前</strong>阶段</td></tr>
+          <tr><td>打不中 / 很难打中</td><td>胶囊在移动圆柱体里面；BaseSkeleton 为空 / 节点标志为 0；悬浮身体的圆柱</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">skeleton_model.md</span><span class="ref">physics_hurtboxes.md</span><span class="ref">donor_graph.md</span><span class="ref">original_model.md</span><span class="ref">params_balance.md §1–2</span><span class="ref">nightlord-replace: character_port.md</span></p>
+  </article>
+
+  <!-- S3 -->
+  <article class="stage" id="s3" aria-labelledby="h-s3">
+    <div class="stage-head">
+      <div class="stage-code">S3</div>
+      <div class="stage-title">
+        <h3 id="h-s3">调试工具</h3>
+        <p class="stage-goal">在做第一个攻击之前，就能随时播放任意招式，并在游戏里读出发生了什么。靠打完整场战斗去碰某一招会浪费几个小时，挂在血量门槛上的演出几乎不可能连续两次碰到。</p>
+        <div class="chips"><span class="chip">所有路线</span><span class="chip">开发专用</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>S2 展示版；S0 的诊断计划和 id 登记表；发布版 AI 源码和已安装的 TAE（生成招式目录用）。</p></div>
+      <div><p class="lbl">工具和文件</p><p>窗口程序、开发专用 DLL 桥、同步日志 DLL、AI 堆监测、开发版战斗脚本和 AI 绑定、招式目录生成器、flag 扫描。完整设计见第 3 节 <a href="#debug-tool">招式调试工具</a>。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li><strong>开发专用调试面板</strong>：外部置顶窗口 ↔（命名共享内存）↔ 开发专用 DLL。DLL 只通过游戏自己的 flag 设置函数写一块预留的事件 flag（没人用的整字节），每次写完读回。证明有用的功能：按 id 播放任意 AI 招式、循环上一招并带停顿、AI 停止、面向玩家、靠近 / 后退、血量锁、变体集覆盖、状态行（动作、血量、阶段、上次请求 / 结果、flag 字）。</li>
+      <li><strong>开发版 AI 覆盖</strong> = 发布版源码逐字节不变 + 末尾追加一段读 flag 的包装函数，把请求送进 AI 自己的攻击路径（预转身、架势切换、攻击后的 goal）。请求等下一次 AI 决策，从不打断正在进行的招式；从不碰演出。<strong>开发版战斗脚本事件</strong>负责只有 EMEVD 能做的事：加载时清空所有调试 flag、反复设置 <code>Set Character Immortality</code> 实现血量锁、变体 SpEffect 覆盖、存活指示，全部同步关闭。<strong>招式目录</strong>从发布版 AI 表 + 已安装 TAE 生成，按架势分组。</li>
+      <li><strong>同步日志 DLL</strong>（只读，可以随包发布）：S0 的字段以 10 Hz 记录，每次变化另记一行；按滚动 / 按场次分文件（固定 20 MB 上限 8.5 分钟就写满，丢了崩溃那一刻）；旧 ini 里缺的键默认为开。</li>
+      <li><strong>AI 堆监测</strong>：最大空闲块（"8k = 是 / 否"）、空闲 MiB、块数，每 5 秒一次，每次地图块加载 / 卸载时也记一次。特征码取自游戏中途的内存转储，整条指针链记录一次。</li>
+      <li>调试包在 <code>&lt;DEV_PROFILE&gt;</code> 里<strong>最后</strong>安装，战斗脚本或 AI 绑定一变就重建（见第 4 节）。它的 flag / 事件范围通过扫描所有层来认领，只在登记表的调试小节里写出；钉文件工具拒绝调试包。</li>
+    </ol>
+    <div class="gate" role="group" aria-label="S3 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才进入 S4</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>所有面板 flag 关闭时，开发版 AI 的决策与发布版 AI 逐字节相同（例如 18,000 次决策）<span class="ev ev-sim">sim</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者在游戏里确认</h5><ul>
+          <li>面板能播放选定的招式 <span class="ev ev-game">game</span></li>
+          <li>日志可读，并带有 S0 定下的字段 <span class="ev ev-game">game</span></li>
+          <li>堆监测记录的数值合理 <span class="ev ev-game">game</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="note">从这里开始，S4–S10 的每一个游戏内测试步骤都用<a href="#recipe">单招测试流程</a>：准备 → 站位 → 请求 → 观察 → 循环 → 记录 → 比对 → 汇报。血量门槛上的演出用"AI 停止 + 把血打到门槛"到达；血量锁挡不住门槛。</p>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>堆监测按退出时转储的基础虚表做，日志里全是"unexpected vtable"</td><td>用游戏中途转储里的实时虚表</td></tr>
+          <tr><td>独占全屏把窗口挡住了</td><td>游戏用无边框模式</td></tr>
+          <tr><td>从沙箱化的代理宿主里启动的窗口跑在私有容器里</td><td>双击启动</td></tr>
+          <tr><td>调试包被后面一个发布相同路径的包遮住</td><td>调试包始终放最后</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">debug_panel.md</span><span class="ref">diagnostics.md</span><span class="ref">nightlord-replace: native_dlls.md</span></p>
+  </article>
+
+  <!-- S4 -->
+  <article class="stage" id="s4" aria-labelledby="h-s4">
+    <div class="stage-head">
+      <div class="stage-code">S4</div>
+      <div class="stage-title">
+        <h3 id="h-s4">动作 + TAE</h3>
+        <p class="stage-goal">每个招式、受击、倒地和死亡都完整播放；只在原作转身的地方转身；从不滑步。</p>
+        <div class="chips"><span class="chip">所有路线</span><span class="chip b">原创：G4（攻击）</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>S1 解码出的动作和动作目录（原创路线：S2b 重定向的动作）；供体 TAE；S3 调试面板。</p></div>
+      <div><p class="lbl">工具和文件</p><p>Havok 编码器 + 三个读取器；带读回的 TAE 写入器；<code>scripts/heading_model.py</code>（离线朝向模型）；动作普查；完整性审计。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li><strong>动作</strong>：60 → 30 fps 重采样；根运动放在参考帧里；每个带根运动的动作 ≤ 29.7 秒 / 892 个参考采样（更长的链拆开）；距离 / 镜像变体要注册叶节点；重建原作的动作链（<code>animation.md</code>）。原创路线的攻击动作像 S2b 一样重定向或制作。</li>
+      <li><strong>TAE</strong> 从供体来，只放控制事件。锁朝向：转身速率事件 224 设为 0，再加跳转表事件 JT7；只在原作转身的时段开转身窗口。瞄准型多发招式在两发之间加<strong>重新瞄准窗口</strong>：每次出手前 0.35 秒关闭，出手后 0.5 秒重开，约 60°/秒。嘴部的横向速度要保持在看起来不像滑步的范围内（<code>tae_turning_windows.md</code> §4）。</li>
+      <li><strong>AI 窗口</strong>放在完整原作招式的出手点之后；goal 寿命 ≥ 动作长度 + 余量。</li>
+      <li><strong>事件时长</strong>：在每个带速度倍率的动作上，出弹事件 ≥ 0.1 秒、标记 ≥ 0.05 秒；第一发在事件开始时打出；原作的时间要除以动作速度（<code>tae_turning_windows.md</code> §10）。</li>
+      <li><strong>标记</strong>：待机心跳、忙碌、空中、受击保护、出手标记（<code>tae_turning_windows.md</code> §8）。</li>
+      <li><strong>受击</strong> 8060 / 8500 / 8700 / 死亡；倒地做成导入原作动作链的事件槽。每个强制 / 脚本动作及其所有变体、以及 AI 飞行攻击测得的空中时段，都要盖 <strong>SpEffect 45</strong>。强制动作之后按条件把控制交还 AI，不用固定等待；没有 ThrowParam 行时，去掉架势崩溃的处决行（<code>reactions_death_phases.md</code> §1–3、§6）。</li>
+      <li><strong>带骨骼链的道具</strong>（攻城武器、伸缩部件）：按几何算够得到的距离，重新编码道具动作，放大包围盒（<code>animation.md</code> §11）。</li>
+    </ol>
+    <div class="gate" role="group" aria-label="S4 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才进入 S5</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>离线朝向模型与同步日志相差约 0–2° <span class="ev ev-model">model</span></li>
+          <li>动作普查（帧数、秒数、参考采样、导入关系）干净 <span class="ev ev-data">data</span></li>
+          <li>完整性审计（原作动作链 vs 动作 vs AI 窗口）干净 <span class="ev ev-data">data</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者在游戏里确认</h5><ul>
+          <li>每招都完整、不滑步，受击 / 倒地 / 死亡符合预期；每招都从调试面板请求并循环 <span class="ev ev-game">game</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>"滑步"</td><td>转身窗口落在原作转身区间之外；AttackTunableSpin；缺 JT7</td></tr>
+          <tr><td>"BOSS 不转身，只有弹体在追"（出手时朝向误差中位数 57°）</td><td>两发之间加重新瞄准窗口（模型里从 57° 降到 3.6°）</td></tr>
+          <tr><td>招式只播了一半</td><td>AI 窗口在出手点之前；goal 寿命比动作短</td></tr>
+          <tr><td>1.05 倍速的动作上随机漏弹 / 漏地雷线</td><td>出弹事件只有一帧：改成 ≥ 0.1 秒</td></tr>
+          <tr><td>脚本倒地：倒下、弹回站立、带着处决光又倒一次；之后 12.8 秒冻结待机</td><td>强制动作链盖 SpEffect 45；按条件交还 AI；去掉处决行</td></tr>
+          <tr><td>角色在长动作里自己转身</td><td>动作长度 / 参考采样数超限</td></tr>
+          <tr><td>死亡时卡在一个姿势</td><td>A10000 / A10001 导入了一个你已经替换掉的动作</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">animation.md</span><span class="ref">tae_turning_windows.md</span><span class="ref">reactions_death_phases.md</span><span class="ref">scripts/README.md</span></p>
+  </article>
+
+  <!-- S5 -->
+  <article class="stage" id="s5" aria-labelledby="h-s5">
+    <div class="stage-head">
+      <div class="stage-code">S5</div>
+      <div class="stage-title">
+        <h3 id="h-s5">攻击判定</h3>
+        <p class="stage-goal">每一招只在显示的地方、显示的时刻伤人；除非设计为不可躲，否则都能躲；对矮个角色公平。</p>
+        <div class="chips"><span class="chip">所有路线</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>S1 的每招攻击数据表（原创路线：设计的判定）；S4 的动作与 TAE；供体的 Bullet / Atk / SpEffect 行。</p></div>
+      <div><p class="lbl">工具和文件</p><p>判定链验证器、状态效果清理、占地审计、命中 / 地面落点 / 影子模型、开发版可见标记（发布开关）。</p></div>
+    </div>
+    <p class="lbl">按形状选伤害载体</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>形状</th><th>载体</th></tr></thead>
+        <tbody>
+          <tr><td>爪击、咬、身体冲撞、挥剑</td><td>TAE type 1 胶囊，取原作的体积</td></tr>
+          <tr><td>光束、吐息流</td><td>沿原作吐息关节放的 dummy 发出隐形伤害弹体，寿命 = 原作弹体寿命，每个弹体带一个地面子弹</td></tr>
+          <tr><td>扇形、横扫、波，以及任何 ≥ 约 30 m 或 &gt; 1,000 m² 且持续 &gt; 0.5 秒的判定</td><td>隐形射线弹体，r 约 1.4–1.6 m，地图碰撞半径 <code>+0x8C</code> = 0.1，起点约 2 m，最低点 ≤ 0.9 m</td></tr>
+          <tr><td>冲击圈、延迟地雷、锚定玩家的一排</td><td>固定地面 dummy 上的 TAE 事件（<code>isEndlessHit 1</code>）；地雷按地面规则；一排攻击从 BOSS 发出</td></tr>
+          <tr><td>必杀 / 全场吐息</td><td>以 BOSS 为中心的真实致死球，每台机器为自己的玩家发射</td></tr>
+          <tr><td>纯视觉</td><td>单独的无伤害拥有者弹体，或 TAE 96；绝不用伤害行</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li>每个事件一条链（TAE → BehaviorParam → Atk / Bullet → 子弹 → 特效 / 音效 id），配验证器；清理状态效果引用；占地审计。</li>
+      <li>按 S1 数据表给每招定伤害载体：近战胶囊取原作体积；吐息流 / 光束从吐息关节 dummy 发出，在原作弹体寿命结束时结束；每个光束弹体带一个地面子弹；姿态规则：吐息流 <code>sfxPostureType 0</code>，只有溅射才用 1。</li>
+      <li>范围图案：冲击圈从固定地面 dummy 上的 TAE 事件发出，<code>isEndlessHit 1</code>；延迟地雷按地面规则（下落 1.5 m、调过的重力、LC 5 子弹）；锚定玩家的一排从 BOSS 发出，绝不靠瞬移辅助物。</li>
+      <li>感知碰撞的判定：射线的地图碰撞半径 <code>+0x8C</code> = 0.1；视觉射线和伤害射线是同一族；遮挡物另做"只挡弹体"的碰撞副本（HitFilter 16）；想要影子，射线半径得接近遮挡物宽度；需要的话加防御影子屏障。</li>
+      <li><strong>命中高度规则</strong>：每个伤害球在飞行过程中的最低点离地 ≤ 约 0.9 m（身体顶部在 1.8 / 1.3 / 1.0 m 的角色都必须能打中）。</li>
+      <li>必杀 / 全屏招式做成 BOSS 发出的真实致死判定：以 BOSS 为中心的球，每台机器为自己的玩家发射；需要的话允许从正面防御；视觉通道单独做、不带伤害。</li>
+      <li>制作期间，每个隐形伤害体都带一个可见的开发标记（明确问测试者要不要）；发布开关会去掉它，两种模式都要做差异比较。</li>
+      <li>翻滚闪避复核；判定尺寸不超过显示出来的范围。</li>
+    </ol>
+    <div class="gate" role="group" aria-label="S5 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才进入 S6</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>每招表格：地面落点误差、够得到的距离、被小凸起挡下的比例、影子内 / 旁边 / 开阔处的命中比例、各身高的命中比例、翻滚存活率 <span class="ev ev-model">model</span></li>
+          <li>判定链验证器 PASS <span class="ev ev-data">data</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者在游戏里确认</h5><ul>
+          <li>每个改动过的招式通过调试面板播放一次 <span class="ev ev-game">game</span></li>
+          <li>没有"没碰到却被打中"，也没有"站在里面却没事" <span class="ev ev-game">game</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>吐息流"往前喷，正前方却打不中"</td><td>从原作吐息关节瞄准，不是从头</td></tr>
+          <tr><td>吐息流之后有零散火焰在地上滑</td><td>吐息弹体设 <code>sfxPostureType 0</code></td></tr>
+          <tr><td>地面火焰子弹往后舔</td><td>子弹继承父弹体的偏航：附着 0 + 陡仰角，或 <code>isOwnerOverrideInitAngle 1</code></td></tr>
+          <tr><td>地雷落在墙上 / 台地上 / 护城河里</td><td>用地面规则代替"落到第一个碰撞"</td></tr>
+          <tr><td>一排攻击总在同一个位置</td><td>辅助物从没移动过（<code>Warp … Copy Floor</code> 且 dummy -1）：改从 BOSS 发出</td></tr>
+          <tr><td>扇形碰到小凸起就消失 / 柱子后面没有影子</td><td><code>+0x8C</code> 0.1；射线 r 约 1.4–1.6 m；只挡弹体的遮挡碰撞</td></tr>
+          <tr><td>矮个角色站在扇形里没事</td><td>伤害起点约 2.0 m；球的最低点 ≤ 0.9 m</td></tr>
+          <tr><td>致死球把人往随机方向击飞</td><td>以 BOSS 为中心，不以受害者为中心</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">attacks_hits.md</span></p>
+  </article>
+
+  <!-- S6 -->
+  <article class="stage" id="s6" aria-labelledby="h-s6">
+    <div class="stage-head">
+      <div class="stage-code">S6</div>
+      <div class="stage-title">
+        <h3 id="h-s6">特效 + 可读性</h3>
+        <p class="stage-goal">做出测试者认可的特效和音效；保持可读（BOSS 和命中时刻始终看得见）；守住显卡预算。</p>
+        <div class="chips"><span class="chip">所有路线</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>S5 定好判定的招式；原作参考图 / 视频；测试者点名的 NR 供体特效；原作音频。</p></div>
+      <div><p class="lbl">工具和文件</p><p>FXR 字节副本 + 数值槽编辑；FXR 证明（差异只在槽内、反向修改能恢复）；覆盖 / 填充模型；Wwise bank 构建（子对象在前）；me3 日志（证明 binder 名字）。</p></div>
+    </div>
+    <p class="lbl">转换还是借用</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>情况</th><th>做法</th></tr></thead>
+        <tbody>
+          <tr><td>同引擎家族</td><td>转换原作 FXR（黑暗之魂3：1:1，GPU 拖尾 / 30）</td></tr>
+          <tr><td>外部引擎的粒子特效</td><td>用测试者点名的 NR 供体特效，做字节副本，只改数值槽；原作特效只当外观参考（转换过来的 Relink 施法特效被评为"太简陋" <span class="ev ev-game">game</span>）</td></tr>
+          <tr><td>平面图案（环、印、符文）</td><td>新的 FXR 壳 + 原作贴图 <span class="ev ev-game">game</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li>同家族就转换，外部引擎就借用 + 重新着色；平面图案做成用原作贴图的新壳。</li>
+      <li><strong>FXR 只做字节副本 + 原位数值槽修改</strong>：从不改数量、偏移或节点链接；从不把原版 FXR 经写入器往返一遍；原位修改前扫描这个 FXR 的所有使用者；每个特效族有自己的副本。binder 规则：成员编号 0..n-1，reslist 在 400000 + i；登记在第一个 id ≥ 99999 的成员处停止；角色的 binder 是 <code>sfxbnd_c&lt;NpcParam.SfxResBankId&gt;</code>，用 me3 日志证明。</li>
+      <li><strong>亮度</strong>：改 HDR 倍率，用构建开关提供几档预设，预计要调一轮。</li>
+      <li><strong>可读性</strong>：要一张截图 + 一张原作参考图；用模型算出是哪个发射器盖住了屏幕（挡视线的是火焰团，不是烟）；爆炸用向上喷射的配方。</li>
+      <li><strong>预算</strong>：按时间对齐的四边形填充 ≤ 已发布的最重招式，粒子 ≤ 1.5 倍，同时存活的特效不增加；不新增点光源 / 扭曲 / 径向模糊 / 拖尾 / GPU 粒子节点；地图区域特效按实例数清点光源。</li>
+      <li><strong>音效</strong>：自建 bank，子对象在父对象前，不引用 bank 外的对象，控制常驻自定义媒体总量；TAE 129 按原作时间轴；受击火花和受击音走私有行。</li>
+    </ol>
+    <div class="gate" role="group" aria-label="S6 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才进入 S7</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>填充 / 粒子 / 存活特效 ≤ 预算包络 <span class="ev ev-model">model</span></li>
+          <li>FXR 证明：字节只在目标槽内不同，反向修改能恢复原文件，其他成员逐字节相同 <span class="ev ev-data">data</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者在游戏里确认</h5><ul>
+          <li>每个改动招式的外观被认可：从面板请求，截图放在原作参考图旁边 <span class="ev ev-game">game</span></li>
+          <li>听到了它的音效 <span class="ev ev-game">game</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>一次 2 字节的断链通过了所有离线证明，游戏却在第一次生成时卡死</td><td>只改数值</td></tr>
+          <tr><td>RGB × 0.75 之后测试者看不出变化</td><td>改 HDR 倍率</td></tr>
+          <tr><td>连续两轮削烟，挡视线的其实是火焰团</td><td>按贴图找出是哪个发射器</td></tr>
+          <tr><td>跨 binder 复制的原版"地毯"特效从不渲染</td><td>用本次移植里已经在游戏中见过的特效来做</td></tr>
+          <tr><td>某台机器在最密集的混合时刻显卡卡死</td><td>减少粒子 / 拖尾数量，保留外观</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">fx_sound.md</span><span class="ref">diagnostics.md §4（显卡卡死）</span></p>
+  </article>
+
+  <!-- S7 -->
+  <article class="stage" id="s7" aria-labelledby="h-s7">
+    <div class="stage-head">
+      <div class="stage-code">S7</div>
+      <div class="stage-title">
+        <h3 id="h-s7">AI</h3>
+        <p class="stage-goal">BOSS 像原作（或设计）那样选招；AI 堆在真实远征里、和每个同时加载的 MOD 一起都撑得住。</p>
+        <div class="chips"><span class="chip">所有路线</span><span class="chip">发布配置关卡</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>原作行为树（原创路线：设计的选招规则）；S4 的招式槽和 AI 窗口；S0 的 AI 堆预算。</p></div>
+      <div><p class="lbl">工具和文件</p><p>真实 Lua 5.0 + mock 的保真测试；LuaC <code>-s</code> 预编译；证明集；<code>.luagnl</code> 生成；AI 堆监测。</p></div>
+    </div>
+    <p>背景：AI 堆是一块固定的 20 MiB 内存，由 4 个 Lua 状态共享，每到一个世界（每次换地图）重建。杀死它的是碎片化，不是总空闲量；能否继续，看有没有 ≥ 8 KiB 的空闲块 <span class="ev ev-code">code</span><span class="ev ev-mp">game-MP</span>。</p>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li>解码原作行为树；每个节点写一个 Lua 函数；未知的 exe 端谓词做成命名开关；每个 BOSS 的状态只放在 <code>ai:SetStringIndexedNumber</code> 里。</li>
+      <li>在真实 Lua 5.0 下用 mock 做保真测试：池测试、单元格分布、动态运行，并给出"按已安装状态"的数字。</li>
+      <li><strong>发布去掉调试信息的预编译字节码，原型要小</strong>：把过大函数体里的连续语句提到辅助函数（只拆主 chunk 没用）。目标：没有原型超过约 700 条指令 / 128 个常量，最大加载块 ≤ 约 3 KB，没有 ≥ 8 KB 的块。证明集：未拆分的原型逐位相同、往返、作用域、去调试信息、形状、决策轨迹。重新生成 <code>.luagnl</code>；保留一个重构源码版的备用绑定。</li>
+      <li>面板包装函数只放在开发版绑定里（S3）；血量门槛用比例（<code>GetHpRate</code>），绝不用绝对血量。</li>
+      <li>堆：用自建竞技场地图块（竞技场地图块的 MSB 不管选的是哪场战斗，都会加载它所有的角色和 AI）；统计同时加载的 MOD 里以源码文本形式存在的 AI；在真实远征中监测堆。</li>
+    </ol>
+    <p class="lbl">大招：AI 招式还是 EMEVD 演出</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>用 AI 招式 + TAE 载荷</th><th>用 EMEVD 演出</th></tr></thead>
+        <tbody>
+          <tr><td>默认选它；联机里自动同步（原版夜王 59 个大招里有 48 个是这样做的）</td><td>竞技场状态要变（墙、地图火、掩体）时才用；这时房主导演 + 客机跟随，客机保持 AI 开启（<code>coop.md</code> §4）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="gate" role="group" aria-label="S7 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡（发布配置）</span><span class="gate-next">过关才进入 S8</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>保真数字按"已安装状态"报告 <span class="ev ev-sim">sim</span></li>
+          <li>加载成本报告在目标之内 <span class="ev ev-data">data</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者在游戏里确认</h5><ul>
+          <li>真实远征、带同时加载的 MOD 监测堆：全程"8k = 是"，记录最小空闲 <span class="ev ev-game">game</span></li>
+          <li>游戏内的选招行为被认可 <span class="ev ev-game">game</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>BOSS 发呆，从不攻击</td><td>绑定没加载（要预编译；每个绑定一个 battle goal）；招式键没绑定</td></tr>
+          <tr><td>所有人在结算时黑屏后崩溃</td><td>拆除时 Lua 内存不足：源码文本 + 常驻的 MOD 角色</td></tr>
+          <tr><td>预编译之后仍留下一个 15 KB 的块</td><td>一个 3,745 条指令的 Interrupt 函数体：提出辅助函数</td></tr>
+          <tr><td><code>.luagnl</code> 过期（缺 17 个名字，卸载时没清掉）</td><td>重新生成</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">ai_port.md</span><span class="ref">nightlord-replace: ai_lua.md</span></p>
+  </article>
+
+  <!-- S8 -->
+  <article class="stage" id="s8" aria-labelledby="h-s8">
+    <div class="stage-head">
+      <div class="stage-code">S8</div>
+      <div class="stage-title">
+        <h3 id="h-s8">战斗脚本 + 场地</h3>
+        <p class="stage-goal">在目的地里从到场一直走到胜利（以及失败 / 重试），竞技场碰撞、导航网格、文本和道具都干净。</p>
+        <div class="chips"><span class="chip">目的地相关</span><span class="chip nl">夜王：Phase 4–5</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>S2–S7 做好的角色；目的地技能的战斗脚本骨架；S0 的 id 登记表。</p></div>
+      <div><p class="lbl">工具和文件</p><p>EMEVD（<code>fight_script.md</code> 骨架）；MSB / 碰撞 / 导航网格工具（<code>nightreign-map-port</code>）；碰撞归属审计；全场悬崖扫描；语言矩阵审计。</p></div>
+    </div>
+    <p class="lbl">具体步骤（角色侧；脚本本身见目的地技能）</p>
+    <ol class="steps">
+      <li>夜王：<code>nightreign-nightlord-replace</code> 的 <code>fight_script.md</code>（开战、血条、BGM 槽位、阶段、部位血、胜利、击杀记录）和 <code>item_switch.md</code>；野外：<code>nightreign-map-port</code>。</li>
+      <li>门槛用血量比例（EMEVD <code>IF Character HP Ratio</code>，Lua <code>GetHpRate</code>）；血量门槛演出用"AI 关闭 + 打到门槛"来测（血量锁挡不住门槛）<span class="ev ev-game">game</span>。</li>
+      <li>演出：每个碰撞件都有实体 id，用 <code>2011[1] Activate Hit</code> 切换，和视觉放在同一个不含等待的块里，同步关闭，每条路径上都要做（初始化、重试、演出结束、中途加入重建）；离线做碰撞归属审计；做一次全场悬崖扫描，而不是一份报告修一处。</li>
+      <li>导航网格：在克隆的地图块里移动内容时，导航网格、NVA id 和 NVA 连接要一起移动（<code>nightreign-map-port</code>）。</li>
+      <li>部位破坏（<code>params_balance.md</code> §7–8）：先建载体，再建可破坏记录；监视器在 Create 之后立刻启动；在破坏判断的同一帧重新武装；破坏由房主 / 单人决定，通过网络 flag 发布。</li>
+      <li>文本：NpcName 以及每条战斗 / 大厅文本覆盖每种发行语言；关键道具在大厅用 <code>2003[108]</code> 发放，id 在原版关键道具号段里（<code>nightreign-nightlord-replace</code>）。</li>
+    </ol>
+
+    <div class="box nl">
+      <div class="box-head"><span class="box-title">做成夜王时：战斗脚本、切换道具、击杀记录</span><span class="box-src">nightreign-nightlord-replace · Phase 4–5 · fight_script.md · item_switch.md</span></div>
+      <div class="box-body">
+        <p class="lbl">战斗脚本</p>
+        <ol class="steps">
+          <li>用 <code>fight_script.md</code> §4 的骨架：DEBUG / REAL 开头、决定器 / 构造器、仇恨门、开战（90075101 的本地副本）、每个 BOSS 实体 90075902 + 90015012 + 90015020 + 90015008、带重建开头的阶段控制器、通过 90075901 胜利、原版失败流程、只在 DEBUG 下运行的事件、圆桌清理。</li>
+          <li>音乐：用一个没人用的 <code>_CL_ReservedNN</code> 槽，并在 <code>cs_main.bnk</code> 和 <code>cs_smain.bnk</code> 两者的顶层音乐 switch 里都加一条路径。<code>Set Boss BGM</code> 只认 114 个缓存的 BgmEnemyType 名字，别的会被悄悄丢掉。名字：每种发行语言的 NpcName，用原作官方名字。</li>
+          <li>阶段和大招按血量比例触发；演出按实体 id 切换每个碰撞件（<code>2011[1]</code>），和视觉一起切。</li>
+          <li>部位破坏：记录在 Create 之后立刻开始（缺记录会被读成"已破坏"）；只由房主决定破坏；在破坏判断的同一帧用 <code>(v, 1)</code> + <code>(9999999, 0)</code> 重新武装；无缝联机下的人数缩放用经过引擎测试的重设基准。</li>
+          <li>自建地图块：绝不置位 7511（仍在加载的原版竞技场会开始它自己的夜王）；击杀时 7513 → 7512；由目标竞技场自己的结束链给原夜王记击杀；大厅 MapConnection 锚点；只能在世界内进入（加载画面瞬移会清掉大招充能和 buff）。</li>
+          <li>REAL 路线：你的脚本从不清 7500–7599，从不调用 <code>Bonfire-like Recovery</code>（大厅到达时已经调用过；地图块加载时再来一次会抹掉消耗品 buff），从不碰复活代币 6999500 / 6999501；倒地 / 复活 / 团灭交给原版 common 1180 / 1181 / 1182–1184。只用前向 GOTO，循环用 END / RESTART，每个等待都有上限；BOSS AI 关闭期间的每个等待都要有超时出口。</li>
+        </ol>
+        <p class="lbl">切换道具、路由、击杀记录、关键道具</p>
+        <ol class="steps">
+          <li>道具从 1290 克隆，带标记 SpEffect、捏碎特效、图标、4 种语言的文本，由大厅商人出售（ShopLineupParam 2000–2999），绝不做成地上捡的（物品栏满时捡不到就丢了）。只靠标记 SpEffect 判断有没有用过。</li>
+          <li>协议：profile 里只有一个 MOD 道具就用单向锁定，否则用"最后捏碎的为准"（房主仲裁，在通过大门时决定，大门最多等 1.5 秒）。在大门处决定，绝不在竞技场加载时决定（竞技场随大厅一起加载）。</li>
+          <li>击杀记录：放进原版竞技场 = 原版结束链 + 按变体加的记录行；自建地图块 = 目标竞技场自己的链；和别的 MOD BOSS 共用大厅 = 对它的决定器副本打带哈希锚定的补丁。</li>
+          <li>关键道具：<code>2003[108]</code>，id 在原版关键道具号段里，在一个 flag 后面只发一次，先有开发版路线（<code>2003[124]</code> 和很大的 id 都失败过）。</li>
+        </ol>
+        <p>夜王的额外关卡：先跑快速测试入口（打包路线），再跑一次真实单人远征：带道具 → MOD 战斗，不带 → 原版战斗，击杀 → 正常结算，大厅 buff 保留，圆桌干净；REAL 路线审计干净（没有碰原版竞技场不碰的玩家状态）。</p>
+      </div>
+    </div>
+
+    <div class="gate" role="group" aria-label="S8 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才进入 S9</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>碰撞审计 0 个孤儿件 <span class="ev ev-model">model</span></li>
+          <li>悬崖扫描清单和测试者一起过了一遍 <span class="ev ev-model">model</span></li>
+          <li>语言矩阵完整 <span class="ev ev-data">data</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者在游戏里确认</h5><ul>
+          <li>开发入口里从到场到胜利文字 + 音乐 <span class="ev ev-game">game</span></li>
+          <li>发布前还要走一遍目的地的真实路线 <span class="ev ev-game">game</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>演出结束后留下空气墙</td><td>碰撞件没有实体 id：给每个件 id，用 <code>2011[1]</code> 切换</td></tr>
+          <tr><td>围栏比 1 m 高的悬崖高出 3.1 m</td><td>扫描，把围栏顶移到悬崖高度 + 0.15 m</td></tr>
+          <tr><td>召唤物好几个版本都不动</td><td>导航网格留在了克隆地图块的原点</td></tr>
+          <tr><td>关键道具弹出了提示，却从没出现在列表里</td><td>发放指令 / id 号段错了，或探针有歧义</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">reactions_death_phases.md §4–5</span><span class="ref">params_balance.md §7–8</span><span class="ref">nightlord-replace: fight_script.md</span><span class="ref">nightlord-replace: item_switch.md</span><span class="ref">nightreign-map-port</span></p>
+  </article>
+
+  <!-- S9 -->
+  <article class="stage" id="s9" aria-labelledby="h-s9">
+    <div class="stage-head">
+      <div class="stage-code">S9</div>
+      <div class="stage-title">
+        <h3 id="h-s9">平衡</h3>
+        <p class="stage-goal">血量、部位耐久和伤害由测试者决定，并给出按深度和人数的预期数字。</p>
+        <div class="chips"><span class="chip">目的地相关</span><span class="chip">发布配置关卡</span><span class="chip nl">夜王：Phase 6</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>原版夜王 / 档位的参数行；原作伤害值；在发布配置下打的校准战日志。</p></div>
+      <div><p class="lbl">工具和文件</p><p>绝对血量审计、带锚点的单元格补丁、无缝联机血量表、防御曲线求解、DPS 木桩对比、同步日志。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li>血量写成一个说明清楚的原版均值的倍数：7 个常规夜王的均值 3516.29，或含 Heolstor（1408 + 2880）的 8 项均值 3612.75。给出几档（例如每阶段 0.75 / 0.9，或单个大体型 1.7 / 2.1 / 2.5），附单人和组队的数字。</li>
+      <li><strong>改血量之前先做绝对血量审计</strong>：绝对血量比较、BOSS 身上的 changeHpPoint、绝对部位基数；之后改血量就只是一个带锚点的两格补丁。</li>
+      <li>人数 / 深度：按下面的无缝联机公式算，公布预期最大血量表，让测试者和日志对照。</li>
+      <li>部位：倍率用永不破坏的载体记录；破坏耐久按设计目标定（恒定的绝对耐久，或恒定的战斗进度）；用经引擎测试的人数重设基准；定好第二次破坏的规则；血量一改，所有自由部位的基数都要重新缩放。</li>
+      <li>伤害：从原作数值迁移；破坏后的倍率在防御曲线上求解；和原版做 DPS 木桩对比。</li>
+      <li>用任何日志校准之前先问：修改器 / 伤害倍率、血量锁、buff、等级变化。校准战关闭所有外部伤害倍率（倍率放大血量伤害，但不放大部位伤害）；校准时调试面板只用来站位，绝不用来跳阶段。</li>
+    </ol>
+    <p class="lbl">无缝联机的最大血量</p>
+    <div class="formula">max HP = trunc( f32( hp × f32( 3.54 × DN × (1 + 1.2 × (n − 1)) ) ) )</div>
+    <p class="note">hp = NpcParam 血量；3.54 = 夜王固有 7767 的血量倍率（攻击倍率是 3.36）；DN = 深夜层数的倍率；n = 人数。数值在 ENABLE 时固定；原版人数倍率 7867（×2）/ 7967（×3）在无缝联机下从未生效；辅助角色不缩放 <span class="ev ev-mp">game-MP</span><span class="ev ev-data">data</span>。4–6 人的情况只按公式推算，实测只做过 2 人 / 3 人。</p>
+
+    <div class="box nl">
+      <div class="box-head"><span class="box-title">做成夜王时</span><span class="box-src">nightreign-nightlord-replace · Phase 6 · balance.md</span></div>
+      <div class="box-body">
+        <p>对标原版行（<code>balance.md</code> §1–3），带数字给出选项：某个具名均值的血量倍数、深夜开 / 关、伤害迁移、状态阈值、破坏规则 (a) / (b)、读条计数，由测试者决定并记录。数字要同时给深度 0 和玩家实际用的深度，用无缝联机公式算，并公布预期最大血量表。</p>
+      </div>
+    </div>
+
+    <div class="gate" role="group" aria-label="S9 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡（发布配置）</span><span class="gate-next">过关才进入 S10</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>各深度 / 人数下，破坏点落在血条上的位置 <span class="ev ev-sim">sim</span></li>
+          <li>预期最大血量表已公布</li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者确认</h5><ul>
+          <li>测试者的决定连同按深度 / 人数的数字记录在案</li>
+          <li>日志里的最大血量等于公布的表 <span class="ev ev-game">game</span><span class="ev ev-mp">game-MP</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>三个叠加的旋钮（弱点倍率 × 部位血 × 子弹 k）给出近战 ×3.3、子弹 ×6.7，而目标是 ×2；"头永远打不破"</td><td>先按攻击类别重述每条要求，再构建</td></tr>
+          <tr><td>重新缩放时漏了胸部和翅膀</td><td>每个可破坏部位都问一遍</td></tr>
+          <tr><td>修改器让部位损失看起来每点只有 0.2</td><td>读日志之前先问有没有开修改器</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">params_balance.md</span><span class="ref">nightlord-replace: balance.md</span></p>
+  </article>
+
+  <!-- S10 -->
+  <article class="stage" id="s10" aria-labelledby="h-s10">
+    <div class="stage-head">
+      <div class="stage-code">S10</div>
+      <div class="stage-title">
+        <h3 id="h-s10">联机</h3>
+        <p class="stage-goal">1–6 名玩家时，每台机器上都是同一场战斗。</p>
+        <div class="chips"><span class="chip">目的地相关</span><span class="chip">发布配置关卡</span><span class="chip nl">夜王：Phase 7</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>S8 的战斗脚本；S9 的数字；几台机器 + 联机 DLL；测试者组织的真实联机。</p></div>
+      <div><p class="lbl">工具和文件</p><p>每台机器的同步日志（按 UTC / 偏移对齐）；逐机制的编号清单；离线房主 / 客机模拟器（只用于回归）。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li>每台机器都跑整个 EMEVD：演出做成"房主导演 + 客机跟随"；每个改变 BOSS 的命令（瞬移、重力、强制动作、AI 开 / 关、启用）都放在房主判断后面；客机只保留本地效果。<code>Force Animation</code> / <code>Rotate</code> / <code>Short Warp</code> 只作用于本地副本。</li>
+      <li>召唤 / 辅助的战斗角色：<code>isHostSyncChr 0</code>，并且每台机器 AI 都开（原版做法）；房主强制的动作只会同步到会复制的角色上，按角色类型逐一测试。</li>
+      <li>只有一个裁判：由房主决定（部位破坏、"剑落下"、读条被破），发布网络 flag，每隔几秒重发一次。</li>
+      <li>人数按每个槽位是否在场（Player No 1..6）来数，无缝联机下绝不用 <code>Is Player Count</code>；审计每个按玩家写的块是否覆盖槽位 4–6；目标槽位发布：先清，下一帧再设；没有槽位就不发射。</li>
+      <li>只影响自己玩家的效果在每台机器上各自做，同步关闭（致死跳伤、防御屏障、关键道具发放）。绝不对玩家用 <code>Set Character Invincibility</code>；用玩家自己施加、会自己过期的 SpEffect（作用在 20000 上，放在同步关闭的事件里）。</li>
+      <li>加固长演出：房主忽略客机的结束信号，开始时清掉旧 flag，结束条件去抖 ≥ 2 帧，每个结束条件留面包屑 flag。</li>
+      <li>联机结束后立刻收齐每台机器的日志，按 UTC / 偏移对齐；新的脉冲 flag 放在已经记录的范围内。</li>
+    </ol>
+    <div class="box nl">
+      <div class="box-head"><span class="box-title">做成夜王时</span><span class="box-src">nightreign-nightlord-replace · Phase 7 · coop.md · native_dlls.md</span></div>
+      <div class="box-body">
+        <ol class="steps">
+          <li>审计每个事件：谁在运行、同步状态、谁持有哪个副本、谁设 / 清每个 flag 和 SpEffect；每个按玩家的块都覆盖槽位 4–6。</li>
+          <li>不在每台机器上各自命令 BOSS：大招由房主的 AI 发起，或做成房主驱动的演出（房主导演，客机保持 AI 开启、从不命令 BOSS，跟随发布的独热决定）。单人 = <code>Multiplayer State == 4</code>。BOSS 的持久状态放在会自己过期的 SpEffect 里。</li>
+          <li>带负对照的离线房主 / 客机模拟器（只看回归 / 一致性）；再请一个没写这段代码的代理做一次对抗性审查。</li>
+          <li>联机前：每台机器指纹相同、每台机器都有全部 native DLL、日志 ini 列出了新 flag、当天没人用调试入口或调试面板 profile、准备好编号的逐机制清单、记下房主和延迟、请求录像、每台机器结束后立即发日志。</li>
+        </ol>
+      </div>
+    </div>
+    <div class="gate" role="group" aria-label="S10 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡（发布配置）</span><span class="gate-next">过关才进入 S11</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>1–3 人时与上一版行为完全一致 <span class="ev ev-sim">sim</span></li>
+          <li>4–6 人只能靠真实的 4–6 人联机确认，模拟不算</li>
+        </ul></div>
+        <div class="gate-col"><h5>真实联机里确认</h5><ul>
+          <li>编号的逐机制清单通过，每位玩家报告自己屏幕上看到的 <span class="ev ev-mp">game-MP</span></li>
+          <li>收齐并对齐每台机器的日志 <span class="ev ev-mp">game-MP</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>客机让 BOSS 重新落地并打开 AI，比房主晚约 1.5 秒</td><td>BOSS 命令放在房主判断后面</td></tr>
+          <tr><td>召唤物在客机上从不动</td><td><code>isHostSyncChr 1</code> → 改成 0，每台机器 AI 开</td></tr>
+          <tr><td>3 人队伍里 2 个战技就破了本该 3 个才破的读条</td><td><code>Is Player Count</code> 读成了 2：改按槽位数人</td></tr>
+          <tr><td>离线模拟器跑了 1,488 个场景，都没复现真实的失败</td><td>记录真实联机的日志</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">reactions_death_phases.md §7</span><span class="ref">nightlord-replace: coop.md</span><span class="ref">nightlord-replace: native_dlls.md</span></p>
+  </article>
+
+  <!-- S11 -->
+  <article class="stage" id="s11" aria-labelledby="h-s11">
+    <div class="stage-head">
+      <div class="stage-code">S11</div>
+      <div class="stage-title">
+        <h3 id="h-s11">发布</h3>
+        <p class="stage-goal">发布的内容恰好是测试者在开发版里确认过的，不多也不少。</p>
+        <div class="chips"><span class="chip">目的地相关</span><span class="chip nl">夜王：Phase 8</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>测试者在开发版里确认过的叠加包清单（附测试者原话）；上一个发布版。</p></div>
+      <div><p class="lbl">工具和文件</p><p>钉文件工具 + 守卫、基础链证明、regulation 差量迁移、发布开关双模式差异、补丁 / 安装器、隐私扫描、预演用的临时 me3。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li><strong>钉文件</strong>：按一份明确的开发包清单，对每个路径取最上层的文件，读取对象是 <code>&lt;DEV_PROFILE&gt;</code> 的<strong>副本</strong>（去掉调试 / 探针块）；守卫拒绝相对上一次钉文件的其他改动；列出地图侧文件（MSB、碰撞、导航网格、msg、chrbnd）。</li>
+      <li><strong>基础链证明</strong>：通过构建脚本记录的输入哈希一路追溯到上一个发布版；链上不能经过任何探针 / 调试包。</li>
+      <li><strong>regulation 差量迁移</strong>：上一个发布版 + 恰好是开发版的行差量 + 发布专用格；没动的表逐字节相同。</li>
+      <li>发布专用开关在同一输入上跑两种模式，并做差异比较。</li>
+      <li>补丁只接受上一个发布版；输出确定（没改的文件不重新压缩；用输入的 IV 重新加密）。</li>
+      <li>语言审计；版本号字符串互不为子串；readme 写明每个改动的测试状态；隐私扫描；预演。</li>
+    </ol>
+    <div class="box nl">
+      <div class="box-head"><span class="box-title">做成夜王时：发布链</span><span class="box-src">nightreign-nightlord-replace · Phase 8 · release_packaging.md</span></div>
+      <div class="box-body">
+        <ol class="chain">
+          <li><span class="bx">从去掉探针 / 调试块的开发栈副本钉文件</span></li>
+          <li><span class="bx">regulation 差量迁移</span></li>
+          <li><span class="bx">一条命令、可续跑的构建链</span></li>
+          <li><span class="bx">增量、自包含安装器 + 收据 + 指纹</span></li>
+          <li><span class="bx">在临时 me3 上为每类受众预演</span></li>
+          <li><span class="bx">隐私扫描 + 快速测试守卫</span></li>
+          <li><span class="bx">按受众写 readme，如实写测试状态</span></li>
+          <li><span class="bx">之后的版本另出只接受上一版的原地升级补丁</span></li>
+        </ol>
+        <p>安装器由测试者和朋友自己运行。发布之后的每一份报告，都要先回到开发版叠加包。</p>
+      </div>
+    </div>
+    <div class="gate" role="group" aria-label="S11 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才发布，之后进入 S12</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>离线可测</h5><ul>
+          <li>发布 vs 开发的字段比较，只差点名的开发专用行和发布专用格 <span class="ev ev-data">data</span></li>
+          <li>发布 vs 上一版的改动文件清单 = 预期清单 <span class="ev ev-data">data</span></li>
+          <li>隐私扫描 0 个新命中，保留正对照 <span class="ev ev-data">data</span></li>
+        </ul></div>
+        <div class="gate-col"><h5>预演</h5><ul>
+          <li>每类受众的预演都通过（临时 me3 上的安装、升级、卸载）</li>
+          <li>完整清单见 <a href="#checklist">出包前检查</a></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>版本号字符串包含更早的版本号（1.8.1 vs 1.8.10），子串匹配挑错了输入</td><td>永不复用前缀，按完整标记匹配</td></tr>
+          <tr><td>名字只发了四种语言里的两种；机翻名字和官方名字不同</td><td>id × 语言审计；用官方文本表</td></tr>
+          <tr><td>跳过开发版直接进发布的功能，发布后失败</td><td>先开发版、后打包（S12）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">boss_pipeline.md §4 §6</span><span class="ref">nightlord-replace: release_packaging.md</span></p>
+  </article>
+
+  <!-- S12 -->
+  <article class="stage" id="s12" aria-labelledby="h-s12">
+    <div class="stage-head">
+      <div class="stage-code">S12</div>
+      <div class="stage-title">
+        <h3 id="h-s12">现场反馈循环</h3>
+        <p class="stage-goal">每份玩家 / 测试者的报告都变成恰好一个开发版叠加包，在再次打包之前先在开发版里确认。</p>
+        <div class="chips"><span class="chip">所有路线</span></div>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div><p class="lbl">输入</p><p>玩家 / 测试者的报告、截图、录像、日志。</p></div>
+      <div><p class="lbl">工具和文件</p><p>日志位置回放、模型、渲染；每个改动一个构建脚本（单元格模式）；开发入口。</p></div>
+    </div>
+    <p class="lbl">具体步骤</p>
+    <ol class="steps">
+      <li>按第 4 节的<a href="#tester">测试者循环</a>先问清楚情况。</li>
+      <li>修之前先离线复现报告：回放日志里的位置、跑模型、做渲染。</li>
+      <li>每个改动一个叠加包（第 4 节）。</li>
+      <li>测试者对一批改动说"过"，才触发打包；然后进入 S11。</li>
+    </ol>
+    <div class="box nl">
+      <div class="box-head"><span class="box-title">做成夜王时</span><span class="box-src">nightreign-nightlord-replace · testing.md</span></div>
+      <div class="box-body">
+        <p>要问的问题、修改器陷阱、显卡卡死的收集方式都在 <code>testing.md</code>。快速测试入口是单独的 .me3，永远不进发布（文件夹和 zip 都有守卫脚本检查）；探针和调试面板包（以及它们的 DLL）从不发布，钉文件工具会拒绝它们。</p>
+      </div>
+    </div>
+    <div class="gate" role="group" aria-label="S12 出口关卡">
+      <div class="gate-head"><span class="gate-tag">出口关卡</span><span class="gate-next">过关才进行下一次打包（回到 S11）</span></div>
+      <div class="gate-cols">
+        <div class="gate-col"><h5>规则</h5><ul>
+          <li>没在开发版确认过的东西不打包</li>
+          <li>如果要发布没测试过的东西，必须是负责人明确、带标注的决定（readme 里写"未专门测试"）</li>
+        </ul></div>
+        <div class="gate-col"><h5>测试者在游戏里确认</h5><ul>
+          <li>在开发 profile 里确认这一批改动 <span class="ev ev-game">game</span></li>
+        </ul></div>
+      </div>
+    </div>
+    <p class="lbl">常见失败与修法</p>
+    <div class="tbl w-s">
+      <table>
+        <thead><tr><th>失败</th><th>修法</th></tr></thead>
+        <tbody>
+          <tr><td>功能没有开发版路线就打包（"开发入口显示不了"），例如大厅关键道具：发放指令错、id 不在关键道具号段、两个探针道具同名；2 次失败的包 + 4 个开发探针</td><td>先开发版后打包；探针用唯一名字，并带原版对照</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="refs"><span>详细资料</span><span class="ref">boss_pipeline.md §4 §5</span><span class="ref">testing_qa.md</span><span class="ref">nightlord-replace: testing.md</span></p>
+  </article>
+</section>
+
+<!-- ===================================================== 3 DEBUG TOOL -->
+<section class="sec" id="debug-tool" aria-labelledby="h-debug">
+  <h2 id="h-debug"><span class="secno">3</span>招式调试工具</h2>
+  <p>一个只在开发时用的小工具，用来控制 BOSS 出哪一招。在 S3 里、第一个攻击之前做好，S4–S10 的每个测试步骤都用它。下面的设计在一个三阶段 BOSS 移植里实际做出来并在游戏里使用过 <span class="ev ev-game">game</span>；尖括号里的是你为自己的 MOD 选定的占位符（<code>&lt;DBG_BASE&gt;</code>、<code>&lt;BOSS_ENTITY&gt;</code>、<code>&lt;CHR_ID&gt;</code>、<code>&lt;DEV_PROFILE&gt;</code>）。</p>
+
+  <h3 id="dbg-why">为什么要做</h3>
+  <ul>
+    <li>靠打战斗去碰某一招，会浪费大部分测试时间：AI 按随机、距离、架势、阶段和冷却选招；飞行招式几分钟才来一次；第三阶段的变体要先打掉三分之二血条。测试者看一次指定招式要 5–15 分钟，而修一个问题需要从几个位置把同一招多看几次。</li>
+    <li>演出和强制倒地挂在血量门槛和部位破坏上；没有工具帮忙的调试路线不可能连续两次到达。</li>
+    <li>有了面板，就能按名字请求招式、带停顿重复、从选定位置观看，动作历史还能把截图和每次出招对上。原来"我觉得是左边那个"要来回好几轮，现在变成"索引 15，12:41:07" <span class="ev ev-game">game</span>。</li>
+  </ul>
+
+  <h3 id="dbg-arch">架构</h3>
+  <figure>
+    <div class="fig">
+      <svg viewBox="0 0 900 500" role="img" aria-labelledby="dbg-t dbg-d">
+        <title id="dbg-t">招式调试工具的架构</title>
+        <desc id="dbg-d">窗口程序通过命名共享内存和开发专用 DLL 双向通信；DLL 只经游戏自己的 flag 设置函数写入一块预留的事件 flag；开发版战斗脚本事件和开发版 AI 覆盖读取这些 flag 并作用于 BOSS；DLL 只读地读取 BOSS 的血量、动作和 SpEffect 显示在状态行上。虚线框内全部为开发专用。</desc>
+        <defs>
+          <marker id="dbg-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="sv-head" d="M0 0 L10 5 L0 10 z"></path></marker>
+          <marker id="dbg-ahd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="sv-head-d" d="M0 0 L10 5 L0 10 z"></path></marker>
+        </defs>
+        <rect class="sv-frame" x="14" y="8" width="862" height="390"></rect>
+        <rect class="sv-box" x="30" y="20" width="280" height="84"></rect>
+        <text class="sv-t" x="46" y="48">窗口程序（始终置顶）</text>
+        <text class="sv-s" x="46" y="72">招式按钮 · AI 停止 · 血量锁 · 循环</text>
+        <text class="sv-s" x="46" y="92">变体覆盖 · 面向 / 靠近 / 后退 · 状态行</text>
+        <rect class="sv-box" x="580" y="20" width="280" height="84"></rect>
+        <text class="sv-t" x="596" y="48">开发专用 DLL（桥）</text>
+        <text class="sv-s" x="596" y="72">约每 50 ms 一次 · 先校验游戏版本</text>
+        <text class="sv-s" x="596" y="92">不打补丁 · 不挂钩 · 不符就停</text>
+        <line class="sv-ar" x1="316" y1="62" x2="574" y2="62" marker-start="url(#dbg-ah)" marker-end="url(#dbg-ah)"></line>
+        <text class="sv-s" x="445" y="52" text-anchor="middle">命名共享内存 · 4 KB · 无网络</text>
+        <text class="sv-s" x="445" y="82" text-anchor="middle">心跳 · seqlock · 请求计数</text>
+        <rect class="sv-box-acc" x="580" y="160" width="280" height="84"></rect>
+        <text class="sv-t" x="596" y="188">预留事件 flag 块</text>
+        <text class="sv-s" x="596" y="212">32 个 DLL 所有 + 8 个 EMEVD 所有</text>
+        <text class="sv-s" x="596" y="232">整字节，别人都不用</text>
+        <line class="sv-ar" x1="720" y1="104" x2="720" y2="156" marker-end="url(#dbg-ah)"></line>
+        <text class="sv-s" x="708" y="126" text-anchor="end">只经游戏自己的 flag 设置函数写入</text>
+        <text class="sv-s" x="708" y="144" text-anchor="end">每次写完立即读回</text>
+        <text class="sv-s" x="46" y="160">虚线框内全部开发专用：</text>
+        <text class="sv-s" x="46" y="180">调试包放在开发入口最后加载，</text>
+        <text class="sv-s" x="46" y="200">从不进入任何发布版。</text>
+        <path class="sv-ar" d="M650 244 V272 H230 V296" marker-end="url(#dbg-ah)"></path>
+        <path class="sv-ar" d="M790 244 V296" marker-end="url(#dbg-ah)"></path>
+        <rect class="sv-box" x="30" y="300" width="400" height="84"></rect>
+        <text class="sv-t" x="46" y="328">开发版战斗脚本事件（EMEVD 副本）</text>
+        <text class="sv-s" x="46" y="352">加载时清空 · 血量锁 · 变体 SpEffect 覆盖</text>
+        <text class="sv-s" x="46" y="372">存活指示 · 全部同步关闭</text>
+        <rect class="sv-box" x="460" y="300" width="400" height="84"></rect>
+        <text class="sv-t" x="476" y="328">开发版 AI 覆盖（读 ai:IsEventFlag）</text>
+        <text class="sv-s" x="476" y="352">播放招式 id · AI 停止 · 面向 / 靠近 / 后退</text>
+        <text class="sv-s" x="476" y="372">循环 + 停顿 · 走 AI 自己的攻击路径</text>
+        <path class="sv-ar" d="M230 384 V410 H400 V426" marker-end="url(#dbg-ah)"></path>
+        <path class="sv-ar" d="M660 384 V410 H500 V426" marker-end="url(#dbg-ah)"></path>
+        <rect class="sv-box-boss" x="300" y="430" width="300" height="58"></rect>
+        <text class="sv-t" x="450" y="455" text-anchor="middle">BOSS（&lt;BOSS_ENTITY&gt;）</text>
+        <text class="sv-s" x="450" y="477" text-anchor="middle">演出期间让路 · 不打断进行中的招式</text>
+        <path class="sv-ar-d" d="M600 466 H888 V62 H866" marker-end="url(#dbg-ahd)"></path>
+        <text class="sv-s" x="880" y="456" text-anchor="end">只读：HP · 当前动作 · SpEffect 掩码</text>
+      </svg>
+    </div>
+    <figcaption>每个部件都只在开发时用，发布文件从不改动：开发版战斗脚本和开发版 AI 绑定都是发布版的副本加上追加内容，装在开发入口里最后加载的那个开发专用包里。</figcaption>
+  </figure>
+
+  <h4>窗口程序</h4>
+  <ul>
+    <li>一个 WinForms（或类似）小窗口，始终置顶，<strong>双击启动</strong>：从沙箱化的代理宿主里启动的进程可能跑在私有容器里，看不到游戏的共享内存。游戏用窗口或无边框模式，独占全屏会挡住置顶窗口。点面板会抢走焦点，点回游戏窗口继续玩。</li>
+    <li>证明有用的控件：每个目录条目一个按钮（按架势 / 类型分页）；<strong>AI 停止</strong>（BOSS 不再自己做决定，只播放请求）；<strong>血量锁</strong>（死不了，血量最低到 1）；<strong>循环上一招</strong>，停顿从一个短列表里选（0.5 / 1 / 1.5 / 2 / 3 / 4 / 6 / 8 秒，正好 3 位）；<strong>变体覆盖</strong>（自动 / 基础 / 变体集 1 / 变体集 2，即由 animIdOffset SpEffect 选出的阶段颜色 / 强度动作集）；<strong>面向玩家</strong>、<strong>靠近</strong>、<strong>后退</strong>；<strong>停止 / 清除</strong>（取消循环和还没开始的请求，正在进行的招式会做完）。</li>
+    <li>每个按钮的提示：两种语言的可读名字、AI 招式键、它播放的槽位列表（固定的，或"AI 自己选"）、有哪些变体时间轴、面板索引。</li>
+    <li>关掉窗口 = 约 1.5 秒内所有调试 flag 关闭（DLL 发现心跳停了），BOSS 回到正常 AI。</li>
+  </ul>
+  <h4>通道</h4>
+  <ul>
+    <li>命名共享内存（<code>Local\&lt;name&gt;</code>，4 KB），分两块：应用块（窗口想要什么）和 DLL 块（DLL 看到什么）。每块包含魔数、版本、seqlock（写的时候为奇数，读者重试）、心跳计数、写入者进程 id。</li>
+    <li>应用块：空闲、循环、血量锁、变体选择、停顿码、请求计数、请求索引。</li>
+    <li>DLL 块：状态（正常 / 禁用及原因 / flag 存储不可用）、BOSS 是否在场（0 不在 / 1 刚出现 / 2 稳定）、HP、最大 HP、当前动作、动作变化计数 + 最近 16 个动作 id 的环、被监视 SpEffect 的位掩码（阶段、最终形态、演出进行中、部位破坏标记、变体集、待机心跳、忙碌、狂暴、架势重置）、读回的 flag 字、最后接受的请求、结果码 + 文本、写入计数。</li>
+    <li>离线用两个进程测试通道：一边是用 DLL 自身核心代码的测试程序，另一边是 <code>--selftest</code> 模式的窗口程序；再把窗口离屏渲染成图片审阅。</li>
+  </ul>
+  <h4>DLL 桥</h4>
+  <ul>
+    <li>一个工作线程，约每 50 ms 跑一次。<strong>失败即关闭</strong>：检查游戏版本（PE 时间戳 + 映像大小）以及它调用或读取的每个函数的代码字节，任何不符就记录下来并且什么都不做。旁边放一个 <code>&lt;dll&gt;.off</code> 文件即可禁用。不打代码补丁、不挂钩、不改虚表。</li>
+    <li>只读地找到 BOSS（已加载竞技场地图块里的模型 <code>&lt;CHR_ID&gt;</code> + <code>&lt;BOSS_ENTITY&gt;</code>），每次读取都有保护。</li>
+    <li><strong>只写自己的 flag id，只经游戏自己的事件 flag 设置函数</strong>（第一次调用前比对设置函数和读取函数的字节），每次写都读回。规则：
+      <ul>
+        <li>BOSS 在已加载地图块里出现满 1 秒之前，什么都不写；</li>
+        <li>窗口已连接（心跳在 1.5 秒内变过）且 BOSS 稳定时：主开关 ON，把面板状态写进 DLL 所有的 flag；否则 DLL 所有的 flag 全部 OFF；</li>
+        <li>主开关最先关、最后开，AI 永远看不到写了一半的状态；</li>
+        <li>一次请求 = 先写索引（7 位），再让 2 位格雷码计数器加一（每次只变一位）；AI 先读计数器再读索引；两次轮询之间按了多次只算一次请求，取最新的索引；</li>
+        <li>写入读回不符，就在接下来的轮询里重试（开发版战斗脚本在地图块加载时会清一次所有调试 flag）；连续三次失败就停止这场战斗的所有写入。</li>
+      </ul>
+    </li>
+    <li>以整字节占用没人用的 flag（flag 存储每字节放 8 个 flag），所以游戏写的任何东西都不会被覆盖。</li>
+    <li>把 HP、动作、SpEffect 掩码、flag 读回值和最后的结果报告给窗口。</li>
+    <li>日志放在 DLL 旁边，每次启动重写，上限 1 MB：版本检查、特征码数量、BOSS 挂接情况、每次连接 / 断开、每个请求（索引 + 计数）、每次写入失败。</li>
+  </ul>
+  <h4>开发版战斗脚本事件</h4>
+  <p>追加到已安装开发版战斗脚本的<strong>副本</strong>上，其他事件逐条指令保持不变。初始化行放在 event 0 的末尾，并且要证明 event 0 里没有任何 SKIP 能跳过它的最后一行，保证一定会运行。所有事件 <code>Set Network Sync State(0)</code>；角色指令只作用于 <code>&lt;BOSS_ENTITY&gt;</code>；它们读 DLL 所有的 flag，只写 EMEVD 所有的 flag。</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>事件</th><th>运行方式</th><th>做什么</th></tr></thead>
+      <tbody>
+        <tr><td class="k">加载时清空</td><td>默认，只运行一次</td><td>地图块加载时清掉整个调试范围（DLL 所有 + EMEVD 所有），保证没有调试状态能跨加载留存；BOSS 出现 1 秒后 DLL 会重新写入面板状态</td></tr>
+        <tr><td class="k">血量锁</td><td>每 0.25 秒重启</td><td>主开关 AND 锁 → 反复设置 <code>Set Character Immortality(boss, 1)</code>，并置一个"已应用"flag；否则只有在"已应用"时才关掉不死和"已应用"。发布版脚本从不对 BOSS 设不死，所以不会误撤别的东西</td></tr>
+        <tr><td class="k">变体覆盖</td><td>每 0.25 秒重启</td><td>演出进行中什么都不做；主开关 AND 覆盖 → 第一次轮询时记下当前有哪些变体 SpEffect，之后让每个变体 SpEffect 恰好在它的"想要"flag 为 ON 时存在（只在状态不同时设 / 清）；覆盖关闭 → 恢复一次记下的集合</td></tr>
+        <tr><td class="k">存活指示</td><td>主开关 ON 时每 0.5 秒重启</td><td>切换一个 flag，让窗口能显示"开发版战斗脚本在运行"（能发现调试包没装上）</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>离线证明：读回（原事件按顺序在前，后面是新事件；其余完全相同）；再用一个只实现这些新事件所用指令的小解释器，把面板场景跑一遍。</p>
+  <h4>开发版 AI 覆盖</h4>
+  <ul>
+    <li>开发版 AI 绑定 = 发布版 AI 源码<strong>逐字节不变</strong> + 末尾追加的覆盖块，打包和预编译方式与发布版绑定完全一样（重构、LuaC <code>-s</code>、和 <code>ai_port.md</code> §6 相同的证明）。断言前缀等于发布版源码，并且这个 chunk 不新增任何全局变量。</li>
+    <li>覆盖块包装发布版 AI 的几个函数（决策入口 <code>Think</code>、看门狗、距离检查、播放辅助函数）。主开关 OFF 时，每个包装函数用同样的参数调用发布版函数：没有随机抽取、没有 goal、没有状态写入，每次决策 / 更新只读一次 flag。证明方法：在开发版源码<strong>和</strong>开发版字节码上，跑很多次决策，子 goal 轨迹和每个 BOSS 的状态都与发布版 AI 逐字节相同 <span class="ev ev-sim">sim</span>；然后在 flag 打开时测每个面板操作。</li>
+    <li>用 <code>ai:IsEventFlag(&lt;DBG_BASE&gt; + n)</code> 读 flag，多位数字一位一位拼起来。每个 BOSS 的状态放在 <code>ai:SetStringIndexedNumber</code> 里（看到的序号、请求索引、循环阶段、一个在主开关上升时重置的"已武装"标记）。</li>
+    <li>请求处理：
+      <ul>
+        <li>在 battle goal 的下一次决策时接收；如果 BOSS 正站着待机（有待机心跳、没有忙碌标记），新请求会立刻结束当前决策；正在进行的招式从不打断；</li>
+        <li>通过 <strong>AI 自己的攻击路径</strong>播放（预转身或后退、架势切换、旋转、攻击后的 goal），所以转身、弹体和特效都是 AI 自己的；即使 AI 的距离检查会拒绝，请求的招式也照样播放；</li>
+        <li>每个键对应一个固定的槽位列表，或"AI 自己选"（例如按目标在哪一侧选左 / 右成员）；</li>
+        <li>控制动作用通用 goal（<code>GOAL_COMMON_Turn</code>、<code>ApproachTarget</code>、<code>LeaveTarget</code>），先从低架势起身；</li>
+        <li>AI 停止 = 不做自己的决定（短等待，必要时从低架势起身一次）；</li>
+        <li>循环：招式结束后等选定的停顿，再播一次。</li>
+      </ul>
+    </li>
+    <li><strong>从不碰演出</strong>：演出 SpEffect 存在期间，覆盖块和发布版 AI 一样让路。</li>
+  </ul>
+
+  <h3 id="dbg-catalogue">招式目录</h3>
+  <p>从发布数据生成一张表作为唯一的事实来源，绝不手打。</p>
+  <ul>
+    <li>输入：发布版 AI 源码（校验哈希）里的招式键、每个键绑定的槽位列表、AI 自己对某个键会播放的备选列表（左 / 右成员、侧面 / 正面变体）；已安装 TAE 的转储（每个槽位都存在；有哪些 <code>aNNN_</code> 变体时间轴）；动作目录里的可读名字（稳定 id，<code>survey_and_extraction.md</code> §5），外加一份修正表，处理目录里过期或缺失的名字。</li>
+    <li>条目：索引 1..127（7 个 flag 位）、AI 键、强制槽位列表或"AI 自己选"、分组、测试者语言和英文的名字、备注、能否循环或是否控制动作。按架势和类型分组（例如两足近战 / 两足远程 / 四足 / 空中 / 连招和架势切换 / 控制动作），让分页和测试者的思路一致。</li>
+    <li>以下情况构建失败：某个键不是 AI 招式键；强制列表不是 AI 对这个键会播的列表；某个槽位在 TAE 里不存在；索引重复或超出 1..127；某个 AI 可请求的槽位没有条目（明确的排除列表除外，并写明原因，例如测试者删掉的一声吼叫）。</li>
+    <li>输出：追加到覆盖块的 Lua 表（ASCII）、窗口程序的表（名字、槽位列表、变体）、状态行用的动作名字表（每个 TAE id + 引擎 id），外加一份 json 副本。</li>
+    <li>AI 绑定或 TAE 一变就重新生成；过期的目录会给招式贴错标签。</li>
+  </ul>
+
+  <h3 id="dbg-status">状态行与日志</h3>
+  <ol class="steps">
+    <li>连接："DLL 在线 / BOSS 在场（稳定）/ 开发版战斗脚本存活"（看到了存活指示的切换），否则显示原因；</li>
+    <li>当前动作 id + 可读名字（变体偏移显示为"变体 n"）；</li>
+    <li>HP / 最大 HP（%）和"血量锁开"；</li>
+    <li>阶段、当前变体集、"演出进行中（请求等待）"、部位破坏标记、狂暴、待机心跳；</li>
+    <li>最后一次请求及其结果：请求之后的动作历史里出现了这招的某个槽位，就显示"已开始：&lt;动作 id&gt; &lt;名字&gt;"；约 20 秒都没出现，就给提示（是不是在演出或倒地？AI 被战斗脚本关了？开发版 AI 没装？）；</li>
+    <li>DLL 的结果行（"请求 #n 已写入""已断开：所有调试 flag 关闭""BOSS 不在：请求已丢弃""flag 写入无法验证：本场停止写入"）；</li>
+    <li>一行灰色的开发者信息：DLL 所有的 flag 字、EMEVD 所有的 flag 字、写入计数、最近的动作 id。</li>
+  </ol>
+  <p>日志：DLL 日志（见上）；随包发布的同步日志（<code>diagnostics.md</code> §1），记录 BOSS 动作、位置、朝向、HP，以及本地玩家的位置、HP 和受到的伤害。面板的动作历史加上同步日志的时间戳，就能把每张截图对到具体的一次出招。离线测试环境里还有 AI 的调试钩子。</p>
+
+  <h3 id="dbg-ids">预留 id，以及怎么保证它不进发布</h3>
+  <ul>
+    <li><strong>flag</strong>：在竞技场 flag 组里一个没用过、有存储（world 类）的范围内，预留 32 个 DLL 所有 + 8 个 EMEVD 所有的 flag，按整字节对齐。<strong>事件</strong>：同一组里 4 个开发事件 id，和所有 flag 不相交（事件 id &gt; 299 在结束或重启时会置位 flag "id + slot"）。</li>
+    <li><strong>认领前先扫描 flag</strong>：覆盖每一层的每一个 EMEVD（原版脚本、自己的每个开发包和发布版、同时加载的 MOD 的发布版和开发阶段）：每个解码出的整数参数都算（是实体 / 区域 / flag id 的超集）、每个事件 id、每个 Initialize Event 的"事件 id + slot"、每条批量 / 范围指令覆盖的区间；再加上 AI 源码、DLL 的 ini（flag 列表）和 id 认领文档。报告已用的号码、覆盖它们的范围和空闲的整字节；构建时断言认领的 id 空闲且填满空闲字节。</li>
+    <li><strong>扫描也会数文字</strong>：调试范围只写在 id 登记表的调试小节里（扫描会跳过它自己那一节），别处一律不写：其他笔记、readme、技能文档都不写。有一次检查器失败，就是因为另一份笔记引用了调试范围。</li>
+    <li><strong>开发专用包始终放在 <code>&lt;DEV_PROFILE&gt;</code> 最后</strong>，下面的战斗脚本或 AI 绑定一变，就用它的构建脚本重建：构建脚本读取 <code>&lt;DEV_PROFILE&gt;</code>，找出实际生效的开发文件（后加载的包生效），断言它们的哈希等于预期的基础（换新基础要显式打开允许开关）；已经加载了调试包就拒绝；只写入自己的工作文件夹和一个新的 DLL 文件夹（路径守卫拒绝发布 / 阶段 / 钉文件 / app-data 路径）。如果重建改变了已证明的 DLL 二进制，放回在游戏里证明过的那一份。</li>
+    <li><strong>发布守卫</strong>：钉文件工具只接受符合发布命名规则的包，profile 里还有调试 / 探针块时直接拒绝（从不悄悄跳过）；发布用的 natives 文件夹只接受列出的 DLL；调试构建的最后一步证明钉文件、发布 natives 和基础 profile 文件里都没有提到任何调试文件或哈希，并且发布载荷里的战斗脚本 / AI 绑定和调试版不同。每个调试文件都以 <code>_DEBUG</code> 结尾命名，旁边放一个"仅开发用，绝不发布"的 readme。</li>
+    <li>联机测试那天谁都不用调试 profile；面板是单人开发工具。</li>
+  </ul>
+
+  <h3 id="dbg-limits">它做不到的事（以及怎么绕过去）</h3>
+  <ul>
+    <li><strong>演出和血量门槛上的特殊招不在范围内</strong>：演出 SpEffect 存在时覆盖块让路，特殊招是战斗脚本发起的，不是 AI。到达方法：AI 停止 + 把血打到门槛。<strong>血量锁挡不住门槛</strong>（不死只是让血量最低到 1，比例门槛在血量经过时照样触发），血量锁的用途是在特殊招之后保住 BOSS，不是避开特殊招。外部伤害倍率能很快打到门槛，但那一场就不能用来做平衡和部位破坏校准了（它放大血量伤害，不放大部位伤害；<code>params_balance.md</code> §9）。</li>
+    <li>请求要等下一次 AI 决策：倒地、架势崩溃和强制动作期间什么都不会开始。</li>
+    <li>开发版战斗脚本走的是 DEBUG 路线，显示不了 REAL 路线的行为（远征状态、结算、联机）。</li>
+    <li>它代替不了目的地测试（真实远征），也代替不了真实联机。</li>
+  </ul>
+
+  <h3 id="recipe">单招测试流程（S4–S10）</h3>
+  <ol class="steps">
+    <li><strong>准备</strong>：打开 AI 停止；测试可能打死 BOSS 时打开血量锁；变体覆盖选要测的那一套（或自动）。</li>
+    <li><strong>站位</strong>：用面向 / 靠近 / 后退，把 BOSS 摆到原作里这招开始时的位置；人站到检查需要的地方（正面、侧面、掩体后、身体下方；也换一个矮个角色）。</li>
+    <li><strong>请求</strong>这一招，等状态行显示"已开始：&lt;动作 id&gt;"。</li>
+    <li><strong>观察</strong>，对照 2 分钟清单：完整（没有提前截断）、朝向（只在原作转身处转身）、命中时机 = 视觉时机、命中范围 ≤ 显示范围、地面落点 / 图案位置、特效外观和亮度、音效、帧率。</li>
+    <li><strong>循环</strong>，停顿 2–4 秒，从几个位置 / 距离 / 方位重复；换一套变体再重复。</li>
+    <li><strong>记录</strong>：每条观察记下时间或截一张图；保留同步日志；面板的动作历史把它们和具体的出招对上。</li>
+    <li><strong>比对</strong>：把日志里的位置回放到这一招的模型上（命中模型、朝向模型、地面落点模型），并和原作参考对比；然后才改这一招。</li>
+    <li><strong>汇报</strong>：写明面板索引 + 动作 id + 看到了什么；标注结果状态（已构建 / 已安装 / 测试者看到 / 已认可）。</li>
+  </ol>
+  <div class="tbl w-s">
+    <table>
+      <thead><tr><th>阶段</th><th>这一阶段怎么用面板</th></tr></thead>
+      <tbody>
+        <tr><td class="k"><a href="#s4">S4</a></td><td>每招的完整性和朝向</td></tr>
+        <tr><td class="k"><a href="#s5">S5</a></td><td>命中 / 闪避 / 矮个角色 / 掩体检查</td></tr>
+        <tr><td class="k"><a href="#s6">S6</a></td><td>外观和亮度，旁边放原作截图</td></tr>
+        <tr><td class="k"><a href="#s7">S7</a></td><td>逐招检查之后，关掉面板、打开 AI，看整体行为</td></tr>
+        <tr><td class="k"><a href="#s8">S8</a></td><td>用上面的门槛路线进入演出</td></tr>
+        <tr><td class="k"><a href="#s9">S9</a></td><td>校准时不开修改器或伤害倍率，面板只用来站位</td></tr>
+        <tr><td class="k"><a href="#s10">S10</a></td><td>从不使用（单人工具）；联机靠同步日志</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="dbg-build">最小构建检查清单</h3>
+  <ul class="checklist" id="cl-debug">
+    <li><input type="checkbox" id="dbg-c1"><label for="dbg-c1">对每一层做了 flag 扫描；认领的 flag 填满空闲整字节；事件 id 不相交；范围只写在调试小节里。</label></li>
+    <li><input type="checkbox" id="dbg-c2"><label for="dbg-c2">招式目录从发布版 AI + 已安装 TAE 生成；任何缺失 / 外来条目都让构建失败。</label></li>
+    <li><input type="checkbox" id="dbg-c3"><label for="dbg-c3">开发版 AI = 发布版源码逐字节不变 + 覆盖块；预编译方式和发布版绑定一样；flag 全关时的轨迹在源码和字节码上都与发布版 AI 相同；每个面板操作都离线测过。</label></li>
+    <li><input type="checkbox" id="dbg-c4"><label for="dbg-c4">开发版战斗脚本 = 已安装的开发版脚本 + 四个事件；已读回；其他事件完全相同；解释器场景通过。</label></li>
+    <li><input type="checkbox" id="dbg-c5"><label for="dbg-c5">DLL：版本 / 特征码检查失败即关闭；只通过游戏的设置函数写自己的 flag 并读回；协议在合成的 flag 存储上离线测过；有 <code>.off</code> 开关；日志有上限。</label></li>
+    <li><input type="checkbox" id="dbg-c6"><label for="dbg-c6">窗口：通道的双进程测试通过；离屏图片审阅过；关窗口会清掉所有 flag。</label></li>
+    <li><input type="checkbox" id="dbg-c7"><label for="dbg-c7">调试包装在最后；构建脚本断言基础；每次战斗脚本 / AI 绑定改动后都重建了。</label></li>
+    <li><input type="checkbox" id="dbg-c8"><label for="dbg-c8">发布守卫：钉文件工具拒绝调试包；natives 允许列表；钉文件 / 载荷里没有调试文件或哈希；文件以 <code>_DEBUG</code> 命名。</label></li>
+  </ul>
+  <div class="cl-tools"><button class="btn" type="button" data-reset="cl-debug" id="reset-debug">清空这张清单的勾选</button><span class="note">勾选只保存在你自己的浏览器里。</span></div>
+  <p class="refs"><span>详细资料</span><span class="ref">debug_panel.md</span><span class="ref">diagnostics.md</span><span class="ref">ai_port.md §6</span></p>
+</section>
+
+<!-- ===================================================== 4 WORKFLOW -->
+<section class="sec" id="workflow" aria-labelledby="h-workflow">
+  <h2 id="h-workflow"><span class="secno">4</span>开发与发布</h2>
+
+  <h3 id="overlay">开发版叠加包工作流</h3>
+  <ol class="steps">
+    <li><strong>每个包一个改动，放在新文件夹里</strong>，追加到 <code>&lt;DEV_PROFILE&gt;</code>，<code>load_after</code> 指向上一个最顶层的包（同一路径上后加载的包生效；me3 日志里的 <code>override=</code> 行能证明实际用的是哪一份）。从不覆盖已安装或已暂存的文件夹：这些文件夹就是回退历史。</li>
+    <li><strong>每个改动一个构建脚本</strong>：断言自己的基础，只按确切的旧值改自己的单元格 / FXR 槽 / 事件（"单元格模式"）。这样输出可以按任意顺序叠加，几个代理可以并行工作，同一个构建脚本也能在发布输入上重放。</li>
+    <li><strong>安装守卫</strong>：游戏在运行时拒绝（忽略 0 线程的僵尸进程）；暂存哈希不是验证过的那个时拒绝；当前最顶层包不是预期的那个时拒绝；目标文件夹已存在时拒绝。备份 profile；下一次构建断言新的最顶层。</li>
+    <li><strong>调试包只用于开发、始终放最后</strong>，战斗脚本或 AI 绑定一变就重建（发布工具只会追加，所以之后发布相同路径的包会遮住它，或被它遮住）。步骤：移除它的块，把下一个块的 <code>load_after</code> 改指向前一个，安装新包，在新基础上重建调试包，再把它加回最后。如果重建改变了已证明的 DLL 二进制，放回游戏里证明过的那一份。</li>
+    <li><strong>探针</strong>（只写日志的部位血探针、可见标记、测试道具）放在 <code>--probe</code> / 开发开关后面构建，在状态文件里标"绝不打包"；装着探针的时候绝不运行钉文件生成器。</li>
+    <li>每个功能的顺序：
+      <ol class="chain">
+        <li><span class="bx">只读研究</span></li>
+        <li><span class="bx">构建到暂存文件夹</span></li>
+        <li><span class="bx">独立验证</span></li>
+        <li><span class="bx">装进开发版</span></li>
+        <li><span class="bx">测试者游玩</span></li>
+        <li><span class="bx">从开发版顶层做发布构建</span></li>
+        <li><span class="bx">和上一版做发布差异</span></li>
+        <li><span class="bx">打包</span></li>
+        <li><span class="bx">补丁</span></li>
+      </ol>
+    </li>
+    <li>通过自身离线检查的开发补丁直接安装，不再单独审计，由测试者在游戏里验证。给别人的东西做一轮审计 + 一次复核。</li>
+    <li>每次改共享工具，都在原文件旁边备份；每一轮把用到的工具复制进这一轮的新文件夹。</li>
+  </ol>
+
+  <h4>每次装开发版之前（角色文件）</h4>
+  <ul class="checklist" id="cl-devinstall">
+    <li><input type="checkbox" id="dev-c1"><label for="dev-c1">列出动作长度和根运动采样数；每个 TAE 条目导入的动作都存在。</label></li>
+    <li><input type="checkbox" id="dev-c2"><label for="dev-c2">TAE、Lua、EMEVD 用到的每个 id 都有对应的行为图状态 / 叶节点。</label></li>
+    <li><input type="checkbox" id="dev-c3"><label for="dev-c3">FLVER 节点顺序 / 标志 / dummy 检查（摆放 dummy 挂在固定 SFX 节点上）；hkx PTCH 审计。</label></li>
+    <li><input type="checkbox" id="dev-c4"><label for="dev-c4">判定链验证器（TAE → BehaviorParam → Atk / Bullet → 子弹；特效 id 在已加载的 binder 里，音效 id 在已加载的 bank 里）；状态效果清理；占地审计。</label></li>
+    <li><input type="checkbox" id="dev-c5"><label for="dev-c5">FXR 字节只在数值槽内不同；bank 子对象顺序正确。</label></li>
+    <li><input type="checkbox" id="dev-c6"><label for="dev-c6">Lua 已预编译，<code>.luagnl</code> 已重新生成。</label></li>
+    <li><input type="checkbox" id="dev-c7"><label for="dev-c7">叠加包里只有改动的文件；dummy 改了时 anibnd + chrbnd + regulation 一起装。</label></li>
+    <li><input type="checkbox" id="dev-c8"><label for="dev-c8">战斗脚本或 AI 绑定改了时，调试包已重建并且仍在最后；游戏进程已检查（忽略 0 线程的僵尸进程）。</label></li>
+  </ul>
+  <div class="cl-tools"><button class="btn" type="button" data-reset="cl-devinstall" id="reset-devinstall">清空这张清单的勾选</button></div>
+  <h4>装完之后告诉测试者</h4>
+  <p>profile + 生效的包；每招改了什么（目录 / 面板 id、第几秒、哪个身体部位）；带面板操作步骤的 2 分钟"看哪里"清单；哪些已证明、哪些未证明；怎么回退。</p>
+
+  <h3 id="tester">与测试者的配合</h3>
+  <div class="ask-grid">
+    <div>
+      <h4>分析任何日志之前先问</h4>
+      <ul>
+        <li>修改器 / 伤害倍率 / 血量锁开了吗？</li>
+        <li>角色、等级、武器、遗物？</li>
+        <li>用的哪个 profile：开发入口，还是带联机 DLL 和强制深度的整合包？</li>
+        <li>单人还是联机，房主还是客机？</li>
+        <li>瞄的是什么？确切位置在哪（截图 + 面板历史）？</li>
+        <li>日志判断不了时：到底有没有被打中？</li>
+      </ul>
+    </div>
+    <div>
+      <h4>看外观时</h4>
+      <ul>
+        <li>先问截图里每个元素是什么，再解读。</li>
+        <li>要一张原作参考图放在旁边。</li>
+        <li>"招式 Y 里有零散的 X"：问是哪一招、哪一侧、是否和这招自己的特效同时出现（别的招式可能共用这个特效）。</li>
+      </ul>
+    </div>
+    <div>
+      <h4>怪到 MOD 头上之前</h4>
+      <ul>
+        <li>检查测试机器：有一次掉帧恰好和无关的 CPU 密集进程同时发生。</li>
+        <li>给玩家建议之前，先在代码里查清对象的生命周期（"每次远征后重启"的建议后来被收回了）。</li>
+      </ul>
+    </div>
+    <div>
+      <h4>每一轮怎么汇报</h4>
+      <ul>
+        <li>profile + 生效的叠加包；每招改了什么（目录 id、第几秒、身体部位）。</li>
+        <li>2 分钟"看哪里"清单；已证明 vs 未证明；怎么回退。</li>
+        <li>用四种报告状态和证据标签；<span class="ev ev-model">model</span> / <span class="ev ev-sim">sim</span> 永远不算"修好了"。</li>
+      </ul>
+    </div>
+    <div>
+      <h4>做决定</h4>
+      <ul>
+        <li>带数字给出选项：必杀还是可存活、能否防御、哪些大招可以救人、近边距离、亮度档位、圆圈大小、倍率宽度。</li>
+        <li>先构建默认项，其他选项留在一个开关之外，记录最后的选择。</li>
+        <li>平衡目标按血条比例来问。测试者的数字和模型的数字并排引用；线性目标在真实曲线上求解，并说明这一点。</li>
+      </ul>
+    </div>
+    <div>
+      <h4>绝不</h4>
+      <ul>
+        <li>绝不根据参数、菜单或推断断言原版或引擎机制：标 <span class="ev ev-inf">inferred</span> 并问测试者。测试者比文件更了解原作和 NR，保真问题由他拍板。</li>
+        <li>游戏里失败之后，不要在一个从没见过它生效的部件上再叠一个纸面原因：用本次移植里已经证明过的部件重建，并对照测试者日志位置的回放来验证。</li>
+        <li>两次纸面解释失败后，要一段录像。</li>
+      </ul>
+    </div>
+  </div>
+  <h4>先开发版，后打包</h4>
+  <p>每个改动都要先在开发 profile 里确认，再打包，包括大厅关键道具这类只在整合包层存在的功能（给它们做一条开发版路线）。两次功能直接进了发布版，两次发布都失败了。</p>
+  <h4>一招什么时候算完成</h4>
+  <ul>
+    <li>原作动作链完整，没被过早的 AI 窗口截断；</li>
+    <li>朝向和原作一样：只在原作转身处转身，瞄准射击会重新瞄准；</li>
+    <li>命中时机 = 视觉时机；命中范围 ≤ 显示范围；矮个角色能被打中；</li>
+    <li>除非是有意的范围攻击，否则能翻滚躲开；</li>
+    <li>特效（可读、在显卡预算内）和音效都在；</li>
+    <li>AI 选它的频率和原作一样；</li>
+    <li>而且测试者这么说了。</li>
+  </ul>
+
+  <h3 id="checklist">出包前检查清单</h3>
+  <ul class="checklist" id="cl-release">
+    <li><input type="checkbox" id="rel-c1"><label for="rel-c1">本次发布的每个改动都在开发版确认过（列出叠加包和测试者的原话）；没测试的项目已标注。</label></li>
+    <li><input type="checkbox" id="rel-c2"><label for="rel-c2">用 profile 副本，去掉调试 / 探针块；发布里没有探针、调试包、开发标记、快速测试入口的痕迹（守卫扫描文件夹和 zip）。</label></li>
+    <li><input type="checkbox" id="rel-c3"><label for="rel-c3">钉文件守卫干净；地图侧文件已列出；基础链证明完整。</label></li>
+    <li><input type="checkbox" id="rel-c4"><label for="rel-c4">regulation：发布 vs 开发只差点名的开发专用行和发布专用格；没动的表逐字节相同；解压后大小在已知上限内；合并允许列表已为新表 / id 号段 / 本地 flag 更新。</label></li>
+    <li><input type="checkbox" id="rel-c5"><label for="rel-c5">发布专用开关在两种模式下都做了差异比较。</label></li>
+    <li><input type="checkbox" id="rel-c6"><label for="rel-c6">AI 绑定是去调试信息的字节码（首字节 <code>0x1B</code>，source 为 <code>=(none)</code>），原样透传；<code>.luagnl</code> 已重新生成；编译前已把源码里的开发者路径字符串中和掉。</label></li>
+    <li><input type="checkbox" id="rel-c7"><label for="rel-c7">FXR：和来源的字节差异只在数值槽内；每个特效族有自己的副本。</label></li>
+    <li><input type="checkbox" id="rel-c8"><label for="rel-c8">语言矩阵：每个 NpcName / FMG id 在每种发行语言里都有，用的是官方名字。</label></li>
+    <li><input type="checkbox" id="rel-c9"><label for="rel-c9">最密集时刻的显卡负载 ≤ 预算包络；在带同时加载 MOD 的发布配置下跑过堆监测。</label></li>
+    <li><input type="checkbox" id="rel-c10"><label for="rel-c10">联机：<span class="ev ev-mp">game-MP</span> 清单通过，或 readme 写明"联机只做了离线检查"；4–6 人没测试就标注出来。</label></li>
+    <li><input type="checkbox" id="rel-c11"><label for="rel-c11">预期最大血量表已公布，并有日志对上。</label></li>
+    <li><input type="checkbox" id="rel-c12"><label for="rel-c12">版本号字符串不是其他版本号的子串；所有列出版本的地方都已更新。</label></li>
+    <li><input type="checkbox" id="rel-c13"><label for="rel-c13">补丁只接受恰好上一个发布版（指纹 + 哈希），执行 <code>mustBeAbsent</code> 列表；测试矩阵（参考安装、升级 = 全新安装、卸载、错误基础、被改过的文件、游戏在运行、中途中断）通过；比较哈希，不比较目录大小。</label></li>
+    <li><input type="checkbox" id="rel-c14"><label for="rel-c14">输出确定：没改的文件不重新压缩；需要可复现时，regulation 用输入的 IV 重新加密。</label></li>
+    <li><input type="checkbox" id="rel-c15"><label for="rel-c15">隐私扫描覆盖每个文件（含 DLL、Lua 常量和补丁）：相对上一次审过的集合 0 个新命中，保留正对照。</label></li>
+    <li><input type="checkbox" id="rel-c16"><label for="rel-c16">readme：每个改动写明测试状态，删掉过时的行，补丁说明从每个目标一份的文件生成。</label></li>
+    <li><input type="checkbox" id="rel-c17"><label for="rel-c17">在临时 me3 上为每类受众预演；补丁测试前删掉可重新生成的旁路副本（省磁盘）。</label></li>
+  </ul>
+  <div class="cl-tools"><button class="btn" type="button" data-reset="cl-release" id="reset-release">清空这张清单的勾选</button><span class="note">勾选只保存在你自己的浏览器里。</span></div>
+</section>
+
+<!-- ===================================================== 5 LESSONS -->
+<section class="sec" id="lessons" aria-labelledby="h-lessons">
+  <h2 id="h-lessons"><span class="secno">5</span>铁律、最耗时间的坑、尚未验证</h2>
+
+  <h3 id="rules">铁律（每一条都至少赔过一轮）</h3>
+  <h4>数据与引擎</h4>
+  <ol class="rules">
+    <li>NR 角色面朝 -Z；MHW / Relink 的动作数据是 60 fps；MHW 的单位是厘米；Relink 的攻击框是半尺寸。<span class="ev ev-data">data</span><span class="ev ev-game">game</span></li>
+    <li>FLVER 节点顺序 [有权重骨骼][网格节点][dummy 拥有者][其他骨骼]，第二骨架表按深度优先，节点标志和原版一样（骨骼 8、网格 4、dummy 拥有者 2、禁用 1）；否则玩家走近就崩，或者身体打不中。<span class="ev ev-code">code</span><span class="ev ev-game">game</span></li>
+    <li>dummy 的位置是模型空间的绑定坐标，id &lt; 1000（<code>id % 1000</code>）且唯一；摆放用 dummy 挂在固定 SFX 节点上，因为父 / 附着 -1 会绑到节点 0，也就是会动的髋部。<span class="ev ev-code">code</span><span class="ev ev-game">game</span></li>
+    <li>每个新 hkx：hkRelArray 的 PTCH 条目 + 从类型列表完全相同的原版文件移植 TYPE 段 + PTCH 审计 MISSING 0 / UNHASHED 0；否则一加载就崩（exe+0x1A11B59 / 0x182AC83）。<span class="ev ev-code">code</span><span class="ev ev-game">game</span></li>
+    <li>行为图只播自己的状态：新 id 需要绑定好的 <code>W_Event&lt;id&gt;</code> / <code>W_Attack&lt;id&gt;</code> 状态；animIdOffset 变体需要那个选择器里有动作叶节点 <code>aNNN_&lt;id&gt;</code>，否则会悄悄播放基础动作。<span class="ev ev-game">game</span></li>
+    <li>每个带根运动的动作 ≤ 29.7 秒 / 892 个参考采样；一个 45 秒 / 1,359 采样的动作让角色自己转了身。<span class="ev ev-game">game</span></li>
+    <li>攻击 TAE 锁朝向（224 = 0 + JT7），只在原作转身处开转身窗口，瞄准型多发招式在两发之间加重新瞄准窗口；没有 224 行 = 用 NpcParam 的默认速率；EMEVD Rotate 里速率 ≤ 0 等于 90°/秒。<span class="ev ev-code">code</span><span class="ev ev-game">game</span></li>
+    <li>AI 窗口（JT23 / 86 / 78 / 79）放在完整原作招式最后的内容（出手点）之后，绝不写成"最后一击 + x"。<span class="ev ev-game">game</span></li>
+    <li>带速度倍率的动作上，出弹事件 ≥ 0.1 秒、标记 ≥ 0.05 秒；第一发在事件开始时打出。<span class="ev ev-data">data</span></li>
+    <li>每个强制 / 脚本动作（及其所有变体）和测得的空中时段都盖 SpEffect 45；JT24 挡不住架势伤害。<span class="ev ev-mp">game-MP</span><span class="ev ev-code">code</span></li>
+    <li>伤害体取原作自己的数据（出弹关节、尺寸、寿命），以可见特效为上限；不要在密集的地图碰撞上长时间开大组近战胶囊；≥ 30 m 的行用 <code>mapHitType 2</code>；每个伤害球的最低点离地 ≤ 约 0.9 m。<span class="ev ev-game">game</span><span class="ev ev-data">data</span><span class="ev ev-model">model</span></li>
+    <li>克隆供体的 Bullet / Atk / SpEffect 行之后，清理每一个状态 SpEffect 引用（一个克隆的火焰行带上了死疫）。<span class="ev ev-data">data</span></li>
+    <li>FXR：字节副本 + 原位浮点数值槽修改；从不改数量、偏移、节点链接（一次 2 字节的断链让游戏卡死）；从不让原版 FXR 经写入器往返。<span class="ev ev-game">game</span></li>
+    <li>FXR binder 成员 0..n-1 + reslist 在 400000 + i；登记在第一个 id ≥ 99999 的成员处停止；角色的 binder 是 <code>sfxbnd_c&lt;NpcParam.SfxResBankId&gt;</code>，用 me3 日志证明。<span class="ev ev-code">code</span><span class="ev ev-game">game</span></li>
+    <li>Wwise bank：子对象在父对象之前，不引用 bank 外的对象，衰减曲线从原版按字节复制；控制常驻自定义媒体的总量（一个 108 MB 的 bank 一直没声音）。<span class="ev ev-game">game</span></li>
+    <li>AI 以去调试信息的预编译 Lua 5.0.2 字节码发布，原型要小（≤ 约 700 条指令 / 128 个常量，最大加载块 ≤ 约 3 KB）：20 MiB 的 AI 堆由 4 个状态共享、每个世界重建；杀死它的是碎片化，不是总空闲量。<span class="ev ev-code">code</span><span class="ev ev-mp">game-MP</span></li>
+    <li>每个 BOSS 的 AI 状态只放在 <code>ai:SetStringIndexedNumber</code>，绝不放进 Lua 全局变量 / upvalue（一个 chunk 服务所有实例）。<span class="ev ev-data">data</span></li>
+    <li>TAE 96 记录是 32 字节（+16 处的 StateInfo 会被无条件读取）；TAE 129 的一次性音效用播放模式 0。<span class="ev ev-code">code</span><span class="ev ev-data">data</span></li>
+    <li>替换一个动作列表之前，先列出导入它的每个 TAE 条目（死亡条目经常导入别的动作）。<span class="ev ev-game">game</span></li>
+    <li>没有脚部 IK 的生物设 <code>isUnduration 0</code>；每个克隆的行都要和来源做差异比较（继承来的 <code>hitYOffset</code> 让一个飞行者浮在空中）。<span class="ev ev-code">code</span><span class="ev ev-game">game</span></li>
+    <li>血量门槛用比例；改血量前先做绝对血量审计；改血量是带锚点的单元格补丁；部位基数不会跟着基础血量变。<span class="ev ev-code">code</span><span class="ev ev-data">data</span></li>
+    <li>联机：每台机器都跑整个 EMEVD，BOSS 命令放在房主判断后面；召唤物 / 辅助角色 <code>isHostSyncChr 0</code>，每台机器 AI 都开；破坏和读条由房主决定；人数按每个槽位是否在场来数，绝不用 <code>Is Player Count</code>。<span class="ev ev-mp">game-MP</span></li>
+    <li>名字（NpcName 和每条 FMG 文本）覆盖游戏发行的每种语言，用原作的官方名字；血条名字来自 common 90075101 的本地副本。<span class="ev ev-game">game</span></li>
+  </ol>
+  <h4>流程</h4>
+  <ol class="rules cont">
+    <li>绝不按标签给原作动作分配角色（死亡、倒地、转身、方向族的成员）：测量，并问测试者（死亡和倒地曾经被搞反）。<span class="ev ev-game">game</span></li>
+    <li>绝不把从参数 / 菜单推断出的原版机制当成事实：标 <span class="ev ev-inf">inferred</span>，并问测试者。</li>
+    <li>测试者说"没变化"时，转储<strong>已安装</strong>的文件；两个几乎相同的东西一个坏了，先把它改成和好的那个逐字节相同，再去推理；先比较简单的大小 / 数量。<span class="ev ev-game">game</span></li>
+    <li>两次纸面解释失败后，要一段录像；猜机制之前先问看到了什么（"滑步" = 没有转身动作的旋转）；绝不在一个从没见它生效过的部件上叠新的纸面原因。<span class="ev ev-game">game</span></li>
+    <li>重建原作自己的动作链和机制，不用通用替代品；可见特效用本次移植里已经在游戏中见过的特效来做。<span class="ev ev-game">game</span></li>
+    <li>每次会改变外观的安装之前，先对<strong>写出的文件</strong>做预览渲染（模型、多帧姿势、胶囊）。<span class="ev ev-game">game</span></li>
+    <li>每个叠加包一个改动、放新文件夹，开发专用调试包始终最后；绝不覆盖已安装或已冻结的阶段文件；共享文件只有一个负责人。先开发版、后打包：每个跳过开发版的功能都在发布里失败了。<span class="ev ev-game">game</span></li>
+    <li>读任何校准日志之前，先问修改器 / 伤害倍率、血量锁、buff；在发布配置下校准。<span class="ev ev-game">game</span></li>
+    <li>代理从不启动游戏，从不碰存档或正在使用的 me3 文件夹；由测试者游玩并安装发布版。</li>
+    <li>"已构建""已安装并读回""测试者看到它生效""测试者认可"是四个不同的状态。<span class="ev ev-game">game</span></li>
+  </ol>
+
+  <h3 id="pitfalls">最耗时间的坑（按损失的轮数 / 发布数排序）</h3>
+  <div class="tbl w-l">
+    <table>
+      <thead><tr><th>#</th><th>坑</th><th>代价 / 症状</th><th>修法</th><th>阶段</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1</td><td>延迟地面图案用"落到第一个碰撞"来放、用一个从没移动过的辅助物来放（<code>Warp … Copy Floor</code> 且 dummy -1）、从挂在 -1（= 会动的髋部）的 dummy 发出；一个总是失败的合理性守卫被当成"bug"删掉了</td><td>7 轮；地雷落在墙上 / 护城河里，一排攻击连续很多版都在场地中央</td><td>由 BOSS 发出的移动弹体、地面规则、固定 SFX 节点 dummy；先弄清失败的守卫在检查什么</td><td>S5、S2</td></tr>
+        <tr><td class="n">2</td><td>腹下伤害圈：载体子弹从没落到地面、<code>isEndlessHit 0</code>、姿态 1 的子弹带着向后的父朝向、一个从没见它渲染过的特效副本</td><td>7 轮，都没感觉到被打中</td><td>固定地面 dummy 上的 TAE 事件 + endless hit + 已在游戏中验证过的特效</td><td>S5、S6</td></tr>
+        <tr><td class="n">3</td><td>没有开发版路线就打包的功能（"开发入口显示不了"），例如大厅关键道具：发放指令错、id 不在关键道具号段、两个探针道具同名</td><td>2 次失败的包 + 4 个开发探针；每个跳过开发版的发布都失败了</td><td>先开发版后打包；探针用唯一名字，并带原版对照</td><td>S12、S8</td></tr>
+        <tr><td class="n">4</td><td>在单人开发入口、并开着外部修改器伤害倍率的情况下校准破坏耐久（倍率放大血量伤害但不放大部位伤害：部位血看起来每显示 1 点只掉约 0.2；这是修改器造成的假象，测试者已确认，不是引擎系数）</td><td>联机里破坏快了 4–5 倍；单人调校偏差等于倍率</td><td>在发布配置下、关掉修改器校准，或者除以倍率；读任何日志前先问修改器</td><td>S0、S9</td></tr>
+        <tr><td class="n">5</td><td>演出让每台机器都去瞬移 / 播动作 / 切换 BOSS 的 AI</td><td>客机让 BOSS 重新落地，与房主相差约 1.5 秒；客机卡死并崩溃的头号嫌疑</td><td>房主导演 + 客机跟随</td><td>S10</td></tr>
+        <tr><td class="n">6</td><td>召唤物 / 辅助角色 <code>isHostSyncChr 1</code>，并且只在房主那里 AI 开</td><td>在客机上永远不动，死在瞬移点</td><td><code>isHostSyncChr 0</code>，每台机器 AI 开</td><td>S10</td></tr>
+        <tr><td class="n">7</td><td>AI 以源码文本发布；MOD 角色常驻在共享的、总会加载的竞技场地图块里</td><td>远征结束结算时所有人崩溃（拆除时 Lua 内存不足）</td><td>预编译的小原型；自建地图块；堆监测</td><td>S7</td></tr>
+        <tr><td class="n">8</td><td>叠加的平衡旋钮（弱点倍率 × 部位血 × 子弹倍率）</td><td>近战 ×3.3 / 子弹 ×6.7，而不是 ×2；"头永远打不破"</td><td>构建前按攻击类别重述每条要求</td><td>S9</td></tr>
+        <tr><td class="n">9</td><td>FXR 结构修改（子发射器 2 字节断链）</td><td>所有离线证明都通过，游戏却卡死</td><td>只改数值槽</td><td>S6</td></tr>
+        <tr><td class="n">10</td><td>只用颜色压暗 HDR 特效；火焰团挡住视线时却去削烟</td><td>2 轮以上"没变化"</td><td>改 HDR 倍率；按贴图和覆盖模型找出挡视线的发射器</td><td>S6</td></tr>
+        <tr><td class="n">11</td><td>无缝联机下用 <code>Is Player Count</code>；战技计数从特殊招开始时算，而不是从可见的读条开始</td><td>战技不够也破了读条；队友提前放的战技把它取消了</td><td>按槽位在场数人；只在可见窗口内计数</td><td>S10</td></tr>
+        <tr><td class="n">12</td><td>伤害球很胖且 <code>+0x8C</code> = -1；射线半径 ≥ 2.5 m；视觉通道被隐形外壳挡住</td><td>扇形碰到小凸起就消失、没有影子、"火焰比以前少"</td><td><code>+0x8C</code> 0.1、r 1.4–1.6 m、视觉通道穿透地图</td><td>S5</td></tr>
+        <tr><td class="n">13</td><td>射线起点在嘴部高度</td><td>矮个 / 蹲下 / 正在救人的角色永远打不中</td><td>起点约 2 m，最低点 ≤ 0.9 m</td><td>S5</td></tr>
+        <tr><td class="n">14</td><td>用头部 dummy 代替原作吐息关节；在会动的骨骼 dummy 上把 <code>shootAngle</code>（偏航）当仰角；扇形顶点放在悬停点</td><td>吐息流打不中正前方；通道在 43 m 高处；飞行 BOSS 正下方挨打</td><td>吐息关节 dummy、按 FK 采样的 dummy 高度、近边从身体算起</td><td>S5</td></tr>
+        <tr><td class="n">15</td><td>致死球以受害者为中心；伤害放在条件不满足的 SpEffect 载荷里 / 放在队伍槽位别名上</td><td>击飞方向随机；完全没有伤害</td><td>球以 BOSS 为中心；伤害放在攻击行里；在同步关闭的事件里作用于自己的玩家 20000</td><td>S5</td></tr>
+        <tr><td class="n">16</td><td>脚本倒地 / 演出没有 SpEffect 45，并且用固定的 AI 关闭等待</td><td>倒两次、假的处决光、12.8 秒冻结待机</td><td>每个强制动作盖 SpEffect 45；按条件交还 AI</td><td>S4</td></tr>
+        <tr><td class="n">17</td><td>1.05 倍速动作上用一帧长的 TAE 出弹事件</td><td>随机漏掉地雷线</td><td>事件 ≥ 0.1 秒</td><td>S4</td></tr>
+        <tr><td class="n">18</td><td>基于错误生命周期模型的 AI 堆建议；用退出时的转储校准堆监测</td><td>建议被收回；第一次运行没有数据</td><td>在代码里读对象生命周期；用游戏中途转储的特征码</td><td>S3、S7</td></tr>
+        <tr><td class="n">19</td><td>碰撞件没有实体 id；围栏一份报告修一处；克隆地图块的导航网格留在旧原点</td><td>演出后留下空气墙；悬崖问题反复被报告；召唤物好几个版本都不动</td><td>每个件都有 id；一次全场扫描；地图块本地数据随内容一起移动</td><td>S8</td></tr>
+        <tr><td class="n">20</td><td>同步日志没有玩家血量字段；调试包没保持在最后；日志上限在崩溃前就写满了</td><td>"我被打中了吗？"三轮都判断不了；被悄悄遮蔽；丢了崩溃那一刻</td><td>S0 的诊断计划；S3 的规则</td><td>S3</td></tr>
+        <tr><td class="n">21</td><td>名字只发了四种语言里的两种；用了机翻名字</td><td>其他语言下血条空白；13 个名字里有 4 个和官方不同</td><td>id × 语言审计；官方文本表</td><td>S2、S11</td></tr>
+        <tr><td class="n">22</td><td>版本号字符串包含更早的版本号（1.8.1 vs 1.8.10）</td><td>子串匹配挑错了输入</td><td>永不复用前缀；按完整标记匹配</td><td>S11</td></tr>
+        <tr><td class="n">23</td><td>原创路线：二次运动逐帧写入（每一帧读的是上一帧刚写过的关键帧）；没开新版本文件夹就连续做两次修复</td><td>大衣根骨绕着腰转圈，在游戏里撕裂；回归只在游戏里看得见</td><td>所有目标先从未改动的姿势算好再写；构建守卫；每道关卡一个新版本文件夹</td><td>S2b</td></tr>
+        <tr><td class="n">24</td><td>原创路线：UV 的 V 没翻转，被一个又翻回来的离线渲染器掩盖了</td><td>游戏里贴图像迷彩</td><td><code>uv.y = 1 − uv.y</code>，显式检查翻转</td><td>S2c</td></tr>
+        <tr><td class="n">25</td><td>血条名字改在了胜利事件 90075901 里</td><td>血条上仍是原版名字</td><td>本地复制 90075101，重定向每个调用者</td><td>S2、S8</td></tr>
+        <tr><td class="n">26</td><td>原创路线：大衣和腿只用一次从下摆开始的洪泛来分开</td><td>蓬松的马裤跟着大衣骨骼走，在膝盖处撕开</td><td>两个相互竞争的测地线洪泛</td><td>S2a</td></tr>
+        <tr><td class="n">27</td><td>把显卡超时怪到贴图头上</td><td>精简贴图没用</td><td>是密集的混合粒子 / 拖尾负载：减少发射器，保留外观</td><td>S6</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 id="unverified">尚未验证</h3>
+  <div class="warnbar"><strong>以下每一条都是工作假设，不是事实。</strong>没有经过测试之前，不要在它们上面继续构建。</div>
+  <h4>流水线通用</h4>
+  <ul class="unv">
+    <li><span class="flag">未验证</span><div>无缝联机的人数系数是否进入 NPC 部位最大值（所以才用经引擎测试的重设基准）；没开修改器时，整合包里单人的破坏时机。</div></li>
+    <li><span class="flag">未验证</span><div>原版固有 7767 的攻击 / 精力倍率是否作用于 EMEVD 发出的弹体；以 BOSS 为中心的致死球在真实联机里的防御方向。</div></li>
+    <li><span class="flag">未验证</span><div>冲击圈后来能打中，到底是固定地面 dummy、<code>isEndlessHit</code> 还是去掉载体起了作用；为什么跨 binder 复制的原版"地毯"特效从不渲染；为什么从已过期的静止保持中生成的地面特效不渲染。</div></li>
+    <li><span class="flag">未验证</span><div>召唤物在烘焙过的竞技场导航网格上会不会移动；原版"吸收"类技能抹掉可抹除的扇形射线，能不能解释联机里一个正在救人的玩家没被打中。</div></li>
+    <li><span class="flag">未验证</span><div>当作工作名字使用的 FXR 属性含义（<code>fx_sound.md</code> §11）；NR 是否沿用艾尔登法环的防御曲线。</div></li>
+    <li><span class="flag">未验证</span><div>满 6 人负载下的架势修正；无缝联机下原版 2P / 3P 的架势倍率（7867 / 7967）似乎不存在，所以架势崩溃可能比原版 3 人夜王早约 3 倍 <span class="ev ev-inf">inferred</span>。</div></li>
+    <li><span class="flag">未验证</span><div>主存档里卸载关键道具后的情况；碰撞层 117 的含义。</div></li>
+    <li><span class="flag">未验证</span><div>重构过的预编译字节码：离线证明全部通过，但每个新构建都要确认游戏里能加载（BOSS 发呆 = 加载失败）。</div></li>
+    <li><span class="flag">未验证</span><div>无缝联机的 nrsc.dll 带有 5 个 EMEVD 测试类的 RTTI 名字（EventFlagState、PlayerNo、SortieMemberNum、TeamType、ChrDead），很可能拦截了它们 <span class="ev ev-inf">inferred</span>：联机里把这五个都当作不可靠。</div></li>
+    <li><span class="flag">未验证</span><div>客机只在收到房主网络 flag 之后才启用自己的辅助角色副本；给召唤物设 <code>Set Network Update Rate</code>（可选的加固，未证明有必要）。</div></li>
+    <li><span class="flag">未验证</span><div>按需生成额外的 BOSS / 辅助角色，而不是放在总会加载的地图块里（能省堆，但还没做）。</div></li>
+    <li><span class="flag">未验证</span><div>根据 DRED 面包屑顺序，把显卡卡死定位到特效 / 透明渲染阶段 <span class="ev ev-inf">inferred</span>。</div></li>
+    <li><span class="flag">未验证</span><div>第 3 天很晚才编译的召唤物 AI 是"那个召唤物一直不出现"的原因（堆快满时）；堆问题能在单人下复现 <span class="ev ev-inf">inferred</span>。</div></li>
+    <li><span class="flag">未验证</span><div>原创路线：没有扭转骨时是否必须 <code>RefTwistEnable = 0</code>；从人形供体转来的 dummy 能否锁定；行为供体的受击动作在原创骨架上的表现；正面站姿（骨盆 + 腿转过来）在游戏里好不好看；离线烘焙布料到额外的大衣骨骼；LOD 档位和加上特效后的最终贴图预算；沿伸缩尾巴的受击框；第二形态用显示遮罩还是用第二个角色。</div></li>
+    <li><span class="flag">未验证</span><div>更早的未决项：MHW <code>flags2</code> 的镜像位；动作上限到底是约 30 秒还是约 1,024 个参考采样；JT7 能否停住 EMEVD Rotate；超过 256 根有权重骨骼（UShort 索引布局）；TAE 760 在胶囊表面上的距离语义；偏移不匹配时选择器是否回落到最后一个叶节点；从角色 bank 播放流式语音。</div></li>
+  </ul>
+  <h4>夜王专属</h4>
+  <ul class="unv">
+    <li><span class="flag">未验证</span><div>DLC / Heolstor 目标的击杀记录转到 m19；中途加入正在进行的战斗；4–6 人时的无缝联机血量（公式只在 2P / 3P 实测过）；对所有敌人的伤害数字；引擎 GoodsDialog 提示；新地图块在分配表里的一行；把 <code>2003[6]</code> 当作碰撞开关。</div></li>
+  </ul>
+  <p class="note">已经修正的旧条目：以前写"房主驱动的演出只在离线确认过"，现在房主独占的 BOSS 命令已经在真实联机里跑过（各机副本误差在约 1 m / 约 1° 以内，客机上看到了只由房主发起的倒地）<span class="ev ev-mp">game-MP</span>。</p>
+</section>
+
+<!-- ===================================================== 6 EVIDENCE -->
+<section class="sec" id="evidence" aria-labelledby="h-evidence">
+  <h2 id="h-evidence"><span class="secno">6</span>证据等级</h2>
+  <p>结论冲突时，按下表从上到下的顺序取强的一方。只有 <span class="ev ev-game">game</span> 和 <span class="ev ev-mp">game-MP</span> 能证明"修好了"；<span class="ev ev-model">model</span> 和 <span class="ev ev-sim">sim</span> 用来找原因、做预测，永远不能关闭一道要求 <span class="ev ev-game">game</span> 的关卡。离线 PASS 在游戏里被推翻过很多次。</p>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>标签</th><th>含义</th><th>能不能证明修好了</th></tr></thead>
+      <tbody>
+        <tr><td><span class="ev ev-mp">game-MP</span></td><td>在真实的多机联机里确认（或回放了每台机器各自的日志）</td><td>能；联机关卡只认它</td></tr>
+        <tr><td><span class="ev ev-game">game</span></td><td>测试者在游戏里亲眼确认</td><td>能</td></tr>
+        <tr><td><span class="ev ev-code">code</span></td><td>对 <code>nightreign.exe</code> 的静态逆向</td><td>不能单独证明，但说明引擎怎么做</td></tr>
+        <tr><td><span class="ev ev-data">data</span></td><td>从文件里读出来的，或离线测量的</td><td>不能</td></tr>
+        <tr><td><span class="ev ev-sim">sim</span></td><td>离线模拟（事件脚本 / AI）</td><td>不能；用来找原因和预测</td></tr>
+        <tr><td><span class="ev ev-model">model</span></td><td>离线的几何 / 粒子 / 伤害模型</td><td>不能；用来找原因和预测</td></tr>
+        <tr><td><span class="ev ev-inf">inferred</span></td><td>只靠推理</td><td>不能；报告里写明是猜测，并问测试者</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">强度顺序：game-MP ＞ game ＞ code ＞ data ＞ sim / model ＞ inferred。页面上实心标签表示"在游戏里证明过"，实线框表示"文件或代码层面"，虚线框表示"模型或模拟"，点线框表示"只是推理"。</p>
+
+  <footer>
+    <p>内容整理自技能 <code>nightreign-boss-port</code>（SKILL.md、references/boss_pipeline.md、references/debug_panel.md）和 <code>nightreign-nightlord-replace</code>（SKILL.md 的 Pipeline 一节）。文件名、id 和英文术语保留原样，方便对照原文查找。</p>
+  </footer>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var KEY = "nr-boss-pipeline-checks-v1";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  var boxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+  Array.prototype.forEach.call(boxes, function(b){
+    if (state[b.id]) b.checked = true;
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(); });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-reset]"), function(btn){
+    btn.addEventListener("click", function(){
+      var scope = document.getElementById(btn.getAttribute("data-reset"));
+      if (!scope) return;
+      Array.prototype.forEach.call(scope.querySelectorAll('input[type="checkbox"]'), function(b){ b.checked = false; delete state[b.id]; });
+      save();
+    });
+  });
+
+  var links = Array.prototype.slice.call(document.querySelectorAll('.toc a[href^="#"]'));
+  var targets = links.map(function(a){ return document.getElementById(a.getAttribute("href").slice(1)); });
+  var strip = document.querySelector(".toc-inner");
+  var current = null, ticking = false;
+  function update(){
+    ticking = false;
+    var limit = 140, idx = -1;
+    for (var i = 0; i < targets.length; i++) {
+      var t = targets[i];
+      if (t && t.getBoundingClientRect().top <= limit) idx = i;
+    }
+    var a = idx >= 0 ? links[idx] : null;
+    if (a === current) return;
+    if (current) current.removeAttribute("aria-current");
+    current = a;
+    if (!a) return;
+    a.setAttribute("aria-current", "true");
+    if (strip && strip.scrollWidth > strip.clientWidth + 4) {
+      strip.scrollLeft = Math.max(0, a.offsetLeft - 24);
+    }
+  }
+  window.addEventListener("scroll", function(){ if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+  window.addEventListener("resize", update);
+  update();
+})();
+</script>
+
+</body></html>

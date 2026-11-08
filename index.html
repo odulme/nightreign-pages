@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>黑夜君临 MOD 资料</title>
+<style>
+:root{--bg:#f4f5f3;--surface:#fff;--fg:#1b1f23;--muted:#5d666e;--line:#d3d8da;--accent:#0c5a6f;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#111416;--surface:#181c1f;--fg:#e4e8eb;--muted:#939ca4;--line:#2b3238;--accent:#5fb4c9;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111416;--surface:#181c1f;--fg:#e4e8eb;--muted:#939ca4;--line:#2b3238;--accent:#5fb4c9;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 "Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:48px 16px 64px}
+h1{font-size:1.9rem;line-height:1.25;margin:0 0 8px}
+.lede{color:var(--muted);margin:0 0 32px}
+a.card{display:block;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);padding:18px 20px;margin-bottom:16px;border-radius:4px}
+a.card:hover{border-color:var(--accent)}
+.card h2{font-size:1.2rem;margin:0 0 6px;color:var(--accent)}
+.card p{margin:0;color:var(--muted);font-size:.95rem}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <h1>黑夜君临 MOD 资料</h1>
+  <p class="lede">ELDEN RING NIGHTREIGN 离线 MOD 的制作资料与数值对比（非官方，与 FromSoftware / Bandai Namco 无关）。</p>
+  <a class="card" href="boss-pipeline.html">
+    <h2>黑夜君临 BOSS 制作流程</h2>
+    <p>移植 BOSS、原创 BOSS、做成夜王：S0–S12 制作流水线，每个阶段的步骤、出口关卡、常见失败与修法。</p>
+  </a>
+  <a class="card" href="nightlord-compare.html">
+    <h2>夜王数值对比</h2>
+    <p>黑龙、路西法各阶段对比全部原版夜王（普通 / 永夜之王）：血量、减伤、抗性、韧性、部位破坏，深度 0–5 × 1–6 人可切换。</p>
+  </a>
+  <footer>
+    相关的 Claude Code 技能：<a href="https://github.com/odulme/nightreign-boss-skills">nightreign-boss-skills</a>（CC BY-NC-SA 4.0，禁止商用）。作者 odulnme。
+  </footer>
+</main>
+</body>
+</html>
